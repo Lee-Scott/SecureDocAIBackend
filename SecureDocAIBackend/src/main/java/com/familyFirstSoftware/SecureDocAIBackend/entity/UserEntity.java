@@ -2,9 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -17,6 +15,8 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 12/7/2024
+ *
+ *  Never is sent to the frontend
  */
 
 // TODO: add some more fields to the User class and play around with them
@@ -50,10 +50,23 @@ public class UserEntity extends Auditable {
 
     @JsonIgnore
     private String qrCodeSecret;// determines if the verification code is correct
-    @Column(columnDefinition = "TEXT") // Because it's a long string
+    @Column(columnDefinition = "text") // Because it's a long string
     private String qrCodeImageUri;
-    //private String password;
-    private String role; // TODO: create Role class and map here with JPA
+    //private String password; // TODO: will be its own class
+
+    // Many users can have one role
+    @ManyToOne(fetch = FetchType.EAGER) // don't use eager for large collections
+    @JoinTable(
+            name = "user_roles", // table name
+            joinColumns = @JoinColumn( // referencing the class its on
+                    name = "user_id", // this class is the join column named user_id
+                    referencedColumnName = "id" // referencing this.id, from the Auditable class
+            ),
+            inverseJoinColumns = @JoinColumn( // referencing the field (this.role) its defined on
+                    name = "role_id"))
+    private RoleEntity role; // ADMIN(read, update, delete) or USER(read, update) we can check for permissions or just role depending on the details needed
+
+
 
 
 }

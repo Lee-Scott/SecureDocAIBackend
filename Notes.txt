@@ -1,3 +1,5 @@
 Autditable ---> all entities inherit from it
 
 Entity and domain must be seporait
+
+mvn spring-boot:run prod

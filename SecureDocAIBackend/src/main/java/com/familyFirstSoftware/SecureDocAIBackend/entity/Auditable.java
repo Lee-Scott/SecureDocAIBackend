@@ -1,6 +1,7 @@
 package com.familyFirstSoftware.SecureDocAIBackend.entity;
 
 
+import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -33,7 +34,7 @@ public abstract class Auditable {
     private Long id;
     private String referenceId = new AlternativeJdkIdGenerator().generateId().toString();
 
-    // TODO : make updatedBy and updatedAt an array so we can keep track for multiple changes?
+    // TODO : make updatedBy and updatedAt an array so we can keep track for multiple changes? Maybe a whole history field might be easier for the sql keys
     @NotNull
     private Long createdBy; // user who created this entity
     @NotNull
@@ -50,12 +51,13 @@ public abstract class Auditable {
     // called before the entity is persisted in the DB
     @PrePersist
     public void prePersist() {
-        var userId = 1L;
+        var userId = RequestContext.getUserId();
 
         if(userId == null) {
             throw new ApiException("Cannot persist entity without user ID");
 
         }
+
         setCreatedAt(LocalDateTime.now());
         setCreatedBy(userId);
         setUpdatedBy(userId);
@@ -64,8 +66,8 @@ public abstract class Auditable {
     }
 
     @PreUpdate
-    public void prePersist() {
-        var userId = 1L;
+    public void beforeUpdate() {
+        var userId = RequestContext.getUserId();
         if(userId == null) {
             throw new ApiException("Cannot update entity without user ID");
 
@@ -73,4 +75,8 @@ public abstract class Auditable {
         setUpdatedAt(LocalDateTime.now());
         setUpdatedBy(userId);
     }
+
+
+
+
 }
