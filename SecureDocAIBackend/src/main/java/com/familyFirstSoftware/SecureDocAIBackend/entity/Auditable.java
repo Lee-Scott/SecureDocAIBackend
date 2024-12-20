@@ -14,6 +14,8 @@ import org.springframework.util.AlternativeJdkIdGenerator;
 
 import java.time.LocalDateTime;
 
+import static java.time.LocalDateTime.now;
+
 /*
     This will never be persisted to the DB, the child classes will.
     Provides a foundation for entities that require auditing information,
@@ -22,61 +24,44 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@MappedSuperclass // map this to the DB to child classes
-@EntityListeners(AuditingEntityListener.class) // specifies a listener for all the child classes or entities
-@JsonIgnoreProperties(value = { "createAt", "updateAt" }, allowGetters = true)
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true)
 public abstract class Auditable {
-
     @Id
     @SequenceGenerator(name = "primary_key_seq", sequenceName = "primary_key_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "primary_key_seq")
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false)
     private Long id;
     private String referenceId = new AlternativeJdkIdGenerator().generateId().toString();
-
-    // TODO : make updatedBy and updatedAt an array so we can keep track for multiple changes? Maybe a whole history field might be easier for the sql keys
     @NotNull
-    private Long createdBy; // user who created this entity
+    private Long createdBy;
     @NotNull
-    private Long updatedBy; // user who last updated this entity
+    private Long updatedBy;
 
     @NotNull
     @CreatedDate
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @CreatedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // called before the entity is persisted in the DB
     @PrePersist
-    public void prePersist() {
-        var userId = RequestContext.getUserId();
-
-        if(userId == null) {
-            throw new ApiException("Cannot persist entity without user ID");
-
-        }
-
-        setCreatedAt(LocalDateTime.now());
+    public void beforePersist() {
+        var userId = 0L;//RequestContext.getUserId();
+        //if(userId == null) { throw new ApiException("Cannot persist entity without user ID in Request Context for this thread"); }
+        setCreatedAt(now());
         setCreatedBy(userId);
         setUpdatedBy(userId);
-        setUpdatedAt(LocalDateTime.now());
-
+        setUpdatedAt(now());
     }
 
     @PreUpdate
     public void beforeUpdate() {
-        var userId = RequestContext.getUserId();
-        if(userId == null) {
-            throw new ApiException("Cannot update entity without user ID");
-
-        }
-        setUpdatedAt(LocalDateTime.now());
+        var userId = 0L ; //RequestContext.getUserId();
+        //if(userId == null) { throw new ApiException("Cannot update entity without user ID in Request Context for this thread"); }
+        setUpdatedAt(now());
         setUpdatedBy(userId);
     }
-
-
-
-
 }
