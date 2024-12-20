@@ -57,6 +57,8 @@ mvnw.cmd
 application-dev.yml
 .env
 compose.yml
+application-prod.yml
+application.yml
 
 # Other common Spring Boot and Java project files to ignore
 target/
