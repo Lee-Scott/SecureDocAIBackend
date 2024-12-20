@@ -12,6 +12,6 @@ ACTIVE_PROFILE: prod
 # Email Configuration
 EMAIL_HOST: smtp.gmail.com
 EMAIL_PORT: 587
-EMAIL_USERNAME: FamilyFirstSoftwareSolutions@gmail.com
-EMAIL_PASSWORD: Ls4934506
+EMAIL_USERNAME: 
+EMAIL_PASSWORD: 
 VERIFY_EMAIL_HOST: http://localhost:8085 # Change to 3000 or React port laster
