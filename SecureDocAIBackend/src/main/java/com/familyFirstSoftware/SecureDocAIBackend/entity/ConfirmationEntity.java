@@ -40,7 +40,7 @@ public class ConfirmationEntity extends Auditable {
     private UserEntity userEntity;
 
     public ConfirmationEntity(UserEntity userEntity) {
-
+        this.userEntity = userEntity;
         this.key = UUID.randomUUID().toString();
     }
 }
