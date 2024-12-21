@@ -53,12 +53,9 @@ mvnw.cmd
 .spring-boot-devtools/
 
 
-# Ignore some of my files
-application-dev.yml
-.env
-compose.yml
-application-prod.yml
-application.yml
+# Ignore all local files
+*.env
+*.yml
 
 # Other common Spring Boot and Java project files to ignore
 target/

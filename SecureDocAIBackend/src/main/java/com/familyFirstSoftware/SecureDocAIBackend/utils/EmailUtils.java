@@ -12,21 +12,21 @@ package com.familyFirstSoftware.SecureDocAIBackend.utils;
 
 public class EmailUtils {
 
-    public static String  getEmailMessage(String name, String host, String token) {
+    public static String  getEmailMessage(String name, String host, String key) {
         return "Hello " + name + "\n\n" + "Please click the link below to verify your email address:\n\n" +
-                getVerificationLink(host, token) + "\n\nFamilyFirstSoftware";
+                getVerificationLink(host, key) + "\n\nFamilyFirstSoftware";
     }
 
-    public static String getResetPasswordMessage(String name, String host, String token) {
+    public static String getResetPasswordMessage(String name, String host, String key) {
         return "Hello " + name + "\n\n" + "Please click the link below to verify your email address:\n\n" +
-                getResetPasswordUrl(host, token) + "\n\nFamilyFirstSoftware";
+                getResetPasswordUrl(host, key) + "\n\nFamilyFirstSoftware";
     }
 
-    private static String getVerificationLink(String host, String token) {
-        return host + "/verify?token=" + token;
+    private static String getVerificationLink(String host, String key) {
+        return host + "/verify?key=" + key;
     }
-    private static String getResetPasswordUrl(String host, String token) {
-        return host + "/verify/password?token=" + token;
+    private static String getResetPasswordUrl(String host, String key) {
+        return host + "/verify/password?key=" + key;
     }
 }
 
