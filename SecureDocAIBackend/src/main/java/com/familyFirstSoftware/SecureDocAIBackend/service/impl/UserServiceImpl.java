@@ -7,6 +7,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
+import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.ConfirmationRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.CredentialRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.RoleRepository;
@@ -66,6 +67,24 @@ public class UserServiceImpl implements UserService {
     public RoleEntity getRoleName(String name) {
         var role = roleRepository.findByNameIgnoreCase(name);
         return role.orElseThrow(() -> new RuntimeException("Role not found"));
+    }
+
+    @Override
+    public void verifyAccountKey(String key) {
+        var confirmationEntity = getUserConfirmation(key);
+        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        userEntity.setEnabled(true);
+        userRepository.save(userEntity);
+        confirmationRepository.delete(confirmationEntity);
+    }
+
+    private UserEntity getUserEntityByEmail(String email) {
+        var userByEmail = userRepository.findUserByEmailIgnoreCase(email);
+        return userByEmail.orElseThrow(() -> new ApiException("User not found"));
+    }
+
+    private ConfirmationEntity getUserConfirmation(String key) {
+        return confirmationRepository.findByKey(key).orElseThrow(() -> new RuntimeException("Confirmation key not found"));
     }
 }
 
