@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@SpringBootApplication(exclude = SecurityAutoConfiguration.class)
+@SpringBootApplication//(exclude = SecurityAutoConfiguration.class)
 @EnableJpaAuditing // for the event listener (@EntityListeners) on Auditable witch is extended by all entities
 @EnableAsync
 public class Application {
