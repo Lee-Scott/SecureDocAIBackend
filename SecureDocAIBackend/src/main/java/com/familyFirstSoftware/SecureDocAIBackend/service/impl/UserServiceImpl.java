@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final CredentialRepository credentialRepository;
     private final ConfirmationRepository confirmationRepository;
-    private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder encoder; // TODO: Never used
     private final ApplicationEventPublisher publisher; // need to publish the user has been created to send an email
 
 
