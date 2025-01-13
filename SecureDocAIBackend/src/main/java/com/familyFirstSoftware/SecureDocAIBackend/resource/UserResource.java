@@ -47,12 +47,6 @@ public class UserResource {
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account verified.", HttpStatus.OK));
     }
 
-    @PostMapping(path = {"/login"})
-    public ResponseEntity<?> verifyAccount(@RequestBody UserRequest user) {
-        UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(user.getEmail(), user.getPassword()); // Don't have authorities
-        Authentication authenticate = authenticationManager.authenticate(unauthenticated); // Has authorities
-        return ResponseEntity.ok().body(Map.of("user", authenticate));
-    }
 
     private URI getUri() {
         return URI.create("");
