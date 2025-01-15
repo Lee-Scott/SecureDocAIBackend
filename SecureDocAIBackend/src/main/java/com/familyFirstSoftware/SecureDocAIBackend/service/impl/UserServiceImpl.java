@@ -6,6 +6,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType;
+import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.ConfirmationRepository;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType.LOGIN_ATTEMPT;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.createUserEntity;
 
 /**
@@ -77,6 +79,12 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
         confirmationRepository.delete(confirmationEntity);
     }
+
+    @Override
+    public void updateLoginAttempts(String email, LoginType loginType) {
+
+    }
+
 
     private UserEntity getUserEntityByEmail(String email) {
         var userByEmail = userRepository.findUserByEmailIgnoreCase(email);
