@@ -2,6 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.service;
 
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
+import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 
 /**
  * @author Lee Scott
@@ -17,4 +18,6 @@ public interface UserService {
     RoleEntity getRoleName(String name);
 
     void verifyAccountKey(String key);
+
+    void updateLoginAttempts(String email, LoginType loginType);
 }
