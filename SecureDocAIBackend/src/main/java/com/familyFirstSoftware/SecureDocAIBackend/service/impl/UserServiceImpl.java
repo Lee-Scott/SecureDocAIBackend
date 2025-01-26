@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 
+import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
@@ -82,6 +83,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateLoginAttempts(String email, LoginType loginType) {
+        var userEntity = getUserEntityByEmail(email);
+        RequestContext.setUserId(userEntity.getId());
+        switch (loginType){
+            case LOGIN_ATTEMPT -> {
+
+            }
+
+            case LOGIN_SUCCESS -> {}
+
+            default -> throw new RuntimeException("Invalid login type");
+
+        }
 
     }
 
