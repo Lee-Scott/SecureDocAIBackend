@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.security;
 
+import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +40,7 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+       userService.updateLoginAttempts("lee@gmail.com", LoginType.LOGIN_ATTEMPT);
         return null;
     }
 }
