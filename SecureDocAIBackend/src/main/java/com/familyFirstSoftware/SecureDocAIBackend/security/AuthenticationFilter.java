@@ -20,6 +20,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.io.IOException;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.handleErrorResponse;
 import static javax.swing.text.html.FormSubmitEvent.MethodType.POST;
 
 /**
@@ -53,7 +54,7 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
 
       } catch (Exception exception) {
           log.error(exception.getMessage());
-          //handleErrorResponse(request, response, exception);
+          handleErrorResponse(request, response, exception); // will give us a beautiful response
           return null;
       }
     }
