@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 
+import com.familyFirstSoftware.SecureDocAIBackend.cache.CacheStore;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
@@ -22,9 +23,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
-import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType.LOGIN_ATTEMPT;
+
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.createUserEntity;
 
 /**
@@ -47,6 +49,7 @@ public class UserServiceImpl implements UserService {
     private final ConfirmationRepository confirmationRepository;
     private final BCryptPasswordEncoder encoder; // TODO: Never used
     private final ApplicationEventPublisher publisher; // need to publish the user has been created to send an email
+    private final CacheStore<String, Integer> userCache;
 
 
     @Override
@@ -87,14 +90,32 @@ public class UserServiceImpl implements UserService {
         RequestContext.setUserId(userEntity.getId());
         switch (loginType){
             case LOGIN_ATTEMPT -> {
+                if(userCache.get(userEntity.getEmail()) == null) { // first time logging in?
+                    userEntity.setLoginAttempts(0);
+                    userEntity.setAccountNonLocked(true);
+
+                }
+                userEntity.setLoginAttempts(userEntity.getLoginAttempts() + 1);
+                userCache.put(userEntity.getEmail(), userEntity.getLoginAttempts());
+                if(userCache.get(userEntity.getEmail()) > 5) { // lock account TODO: send email
+                    userEntity.setAccountNonLocked(false);
+
+                }
+            }
+
+            case LOGIN_SUCCESS -> {
+                userEntity.setAccountNonLocked(true);
+                userEntity.setLoginAttempts(0);
+                userEntity.setLastLogin(LocalDateTime.now());
+                userCache.evict(userEntity.getEmail());
 
             }
 
-            case LOGIN_SUCCESS -> {}
-
-            default -> throw new RuntimeException("Invalid login type");
+            // TODO: Try uncommenting and playing around with this for error handling
+            //default -> throw new RuntimeException("Invalid login type");
 
         }
+        userRepository.save(userEntity);
 
     }
 

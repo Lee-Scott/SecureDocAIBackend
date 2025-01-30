@@ -1,7 +1,12 @@
 package com.familyFirstSoftware.SecureDocAIBackend.security;
 
+import com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.LoginRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,7 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
+
 
 import java.io.IOException;
 
@@ -40,8 +45,22 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-       userService.updateLoginAttempts("lee@gmail.com", LoginType.LOGIN_ATTEMPT);
-        return null;
+      try {
+          var user = new ObjectMapper().configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true).readValue(request.getInputStream(), LoginRequest.class);
+          userService.updateLoginAttempts(user.getEmail(), LoginType.LOGIN_ATTEMPT);
+          var authentication = ApiAuthentication.unAuthenticated(user.getEmail(), user.getPassword());
+          return getAuthenticationManager().authenticate(authentication);
+
+      } catch (Exception exception) {
+          log.error(exception.getMessage());
+          //handleErrorResponse(request, response, exception);
+          return null;
+      }
     }
+
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        super.successfulAuthentication(request, response, chain, authResult);
+    }
+
 }
 
