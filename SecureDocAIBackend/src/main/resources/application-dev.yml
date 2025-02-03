@@ -14,4 +14,7 @@ EMAIL_HOST: smtp.gmail.com
 EMAIL_PORT: 587
 EMAIL_USERNAME: 
 EMAIL_PASSWORD: 
-VERIFY_EMAIL_HOST: http://localhost:8085 # Change to 3000 or React port
+VERIFY_EMAIL_HOST: http://localhost:8085 # Change to 3000 or React port'
+
+secret: ${SECRET}
+expiration: 432_000_000
