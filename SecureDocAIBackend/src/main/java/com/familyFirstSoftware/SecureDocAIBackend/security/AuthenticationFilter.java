@@ -3,6 +3,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.security;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication;
 import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.LoginRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
+import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
