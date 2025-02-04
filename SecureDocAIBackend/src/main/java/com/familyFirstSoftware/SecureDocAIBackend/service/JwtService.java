@@ -27,4 +27,5 @@ public interface JwtService {
     // in the past I have put the token in the header, but this is a much more secure approach
     void addCookie(HttpServletResponse response, User user, TokenType token);
     <T> T getTokenData(String token, Function<TokenData, T> tokenFunction);
+    void removeCookie(HttpServletRequest request, HttpServletResponse response, String cookieName);
 }

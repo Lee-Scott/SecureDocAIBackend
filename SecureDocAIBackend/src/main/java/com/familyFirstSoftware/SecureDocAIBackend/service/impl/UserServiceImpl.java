@@ -120,21 +120,13 @@ public class UserServiceImpl implements UserService {
 
     }
 
-
+    // TODO: implement this
     @Override
     public User getUserByUserId(String userId) {
         var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(Long.parseLong(userId)));
+        //return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return null;
     }
-
-
-    public CredentialEntity getUserCredentialById(Long userId) {
-        var credentialById = credentialRepository.getCredentialByUserEntityId(userId);
-        return credentialById.orElseThrow(() -> new ApiException("Unable to find user credential"));
-    }
-
-
-
 
 
 

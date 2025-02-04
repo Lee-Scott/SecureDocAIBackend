@@ -184,5 +184,15 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                 .user(userService.getUserByUserId(subject.apply(token)))
                 .build());
     }
+
+    @Override
+    public void removeCookie(HttpServletRequest request, HttpServletResponse response, String cookieName) {
+        var optionalCookie = extractCookie.apply(request, cookieName);
+        if(optionalCookie.isPresent()) {
+            var cookie = optionalCookie.get();
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+        }
+    }
 }
 
