@@ -4,6 +4,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.Token;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.TokenData;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType;
+import com.familyFirstSoftware.SecureDocAIBackend.function.TriConsumer;
 import com.familyFirstSoftware.SecureDocAIBackend.security.JwtConfiguration;
 import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
@@ -30,10 +31,13 @@ import java.util.function.Supplier;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.ACCESS;
+import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.REFRESH;
 import static java.util.Arrays.stream;
 
 
 import static java.util.Optional.empty;
+import static org.springframework.boot.web.server.Cookie.SameSite.NONE;
 import static org.springframework.security.core.authority.AuthorityUtils.commaSeparatedStringToAuthorityList;
 
 /**
@@ -75,15 +79,15 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
 
      */
     private final BiFunction<HttpServletRequest, String, Optional<String>> extractToken = (request, cookieName) ->
-            Optional.of(stream(request.getCookies() == null ? new Cookie[] {new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())
+            Optional.of(stream(request.getCookies() == null ? new Cookie[]{new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())
                             .filter(cookie -> Objects.equals(cookieName, cookie.getName()))
                             .map(Cookie::getValue)
                             .findAny())
-                            .orElse(empty());
+                    .orElse(empty());
 
     //                  Takes request and cookie name and returns Optional<Cookies>
     private final BiFunction<HttpServletRequest, String, Optional<Cookie>> extractCookie = (request, cookieName) ->
-            Optional.of(stream(request.getCookies() == null ? new Cookie[] {new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())
+            Optional.of(stream(request.getCookies() == null ? new Cookie[]{new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())
                     .filter(cookie -> Objects.equals(cookieName, cookie.getName()))
                     .findAny()).orElse(empty());
 
@@ -111,30 +115,74 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
 
 
 
-                    // Takes <token> returns authorities separated by commas
+
+    private final TriConsumer<HttpServletResponse, User, TokenType> addCookie = ((response, user, type) -> {
+        switch (type) {
+            case ACCESS -> {
+                var accessToken = createToken(user, Token::getAccess);
+                var cookie = new Cookie(type.getValue(), accessToken); // value and name
+                cookie.setHttpOnly(true); // can't access the cookie from js
+                //cookie.setSecure(true);
+                cookie.setMaxAge(2 * 60);
+                cookie.setPath("/"); // if we set this to /user/login it will only work for that route. this always sends it from the domain it came from
+                cookie.setAttribute("SameSite", NONE.name());
+                response.addCookie(cookie);
+            }
+            case REFRESH -> {
+                var refreshToken = createToken(user, Token::getAccess);
+                var cookie = new Cookie(type.getValue(), refreshToken); // value and name
+                cookie.setHttpOnly(true); // can't access the cookie from js
+                //cookie.setSecure(true);
+                cookie.setMaxAge(2 * 60 * 60);
+                cookie.setPath("/");
+                cookie.setAttribute("SameSite", NONE.name());
+                response.addCookie(cookie);
+
+            }
+        }
+    });
+
+    private <T> T getClaimsValue(String token, Function<Claims, T> claims) {
+        return claimsFunction.andThen(claims).apply(token);
+
+    }
+
+    // Takes <token> returns authorities separated by commas
     public Function<String, List<GrantedAuthority>> authorities = token ->
-                            commaSeparatedStringToAuthorityList(new StringJoiner(AUTHORITY_DELIMITER)
-                                    .add(claimsFunction.apply(token).get(AUTHORITIES, String.class))
-                                    .add(ROLE_PREFIX + claimsFunction.apply(token).get(ROLE, String.class)).toString());
+            commaSeparatedStringToAuthorityList(new StringJoiner(AUTHORITY_DELIMITER)
+                    .add(claimsFunction.apply(token).get(AUTHORITIES, String.class))
+                    .add(ROLE_PREFIX + claimsFunction.apply(token).get(ROLE, String.class)).toString());
+
+
+
 
     @Override
     public String createToken(User user, Function<Token, String> tokenFunction) {
-        return null;
+        var token = Token.builder().access(buildToken.apply(user, ACCESS)).refresh(buildToken.apply(user, REFRESH)).build();
+        return tokenFunction.apply(token);
     }
 
     @Override
-    public Optional<String> extractToken(HttpServletRequest request, String tokenType) {
-        return empty();
+    public Optional<String> extractToken(HttpServletRequest request, String cookieName) {
+        return extractToken(request, cookieName);
+
     }
 
     @Override
-    public void addCookie(HttpServletResponse response, User user, TokenType token) {
+    public void addCookie(HttpServletResponse response, User user, TokenType type) {
+        addCookie.accept(response, user, type);
 
     }
 
+    // Generic is everything that exists on the TokenData
     @Override
     public <T> T getTokenData(String token, Function<TokenData, T> tokenFunction) {
-        return null;
+        return tokenFunction.apply(TokenData.builder()
+                .valid(Objects.equals(userService.getUserByUserId(subject.apply(token)).getUserId(), claimsFunction.apply(token).getSubject()))
+                .authorities(authorities.apply(token))
+                .claims(claimsFunction.apply(token))
+                .user(userService.getUserByUserId(subject.apply(token)))
+                .build());
     }
 }
 

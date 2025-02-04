@@ -1,7 +1,9 @@
 package com.familyFirstSoftware.SecureDocAIBackend.utils;
 
+import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
+import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -37,5 +39,6 @@ public class UserUtils {
                 .build();
 
     }
+
 }
 
