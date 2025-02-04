@@ -2,6 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 
 import com.familyFirstSoftware.SecureDocAIBackend.cache.CacheStore;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
@@ -118,6 +119,24 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
 
     }
+
+
+    @Override
+    public User getUserByUserId(String userId) {
+        var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(Long.parseLong(userId)));
+    }
+
+
+    public CredentialEntity getUserCredentialById(Long userId) {
+        var credentialById = credentialRepository.getCredentialByUserEntityId(userId);
+        return credentialById.orElseThrow(() -> new ApiException("Unable to find user credential"));
+    }
+
+
+
+
+
 
 
     private UserEntity getUserEntityByEmail(String email) {
