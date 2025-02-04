@@ -19,10 +19,5 @@ public interface UserService {
     RoleEntity getRoleName(String name);
     void verifyAccountKey(String key);
     void updateLoginAttempts(String email, LoginType loginType);
-
-
-    User getUserByUserId(String apply);
-
-    // TODO : implement
-    User getUserByUserId(Long userId);
+    User getUserByUserId(String userId);
 }
