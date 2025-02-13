@@ -39,7 +39,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 @Configuration
 @AllArgsConstructor
-public class FilterChainConfiguration {
+public class FilterChainConfigurationOld {
 
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -57,7 +57,7 @@ public class FilterChainConfiguration {
 
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, BCryptPasswordEncoder passwordEncoder) {
-        var myOwnAuthenticationProvider = new MyOwnAuthenticationProvider(userDetailsService);
+        var myOwnAuthenticationProvider = new MyOwnAuthenticationProviderOld(userDetailsService);
         return new ProviderManager(myOwnAuthenticationProvider);
     }
 

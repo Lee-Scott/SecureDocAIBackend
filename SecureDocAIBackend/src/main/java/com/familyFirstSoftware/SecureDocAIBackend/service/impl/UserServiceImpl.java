@@ -17,6 +17,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.repository.CredentialRepositor
 import com.familyFirstSoftware.SecureDocAIBackend.repository.RoleRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.UserRepository;
+import com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.createUserEntity;
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.fromUserEntity;
 
 /**
  * @author Lee Scott
@@ -124,11 +127,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByUserId(String userId) {
         var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
-        //return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
-        return null;
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        UserEntity userEntity = getUserEntityByEmail(email);
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
 
+
+    @Override
+    public ConfirmationEntity getUserCredentialById(Long userId) {
+       Optional <ConfirmationEntity> credentialEntity = confirmationRepository.getCredentialByUserEntityId(userId);
+       return credentialEntity.orElseThrow(() -> new ApiException("User credentials not found"));
+
+    }
 
 
     private UserEntity getUserEntityByEmail(String email) {

@@ -1,9 +1,8 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service;
 
-import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
+import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 
 /**
@@ -20,4 +19,8 @@ public interface UserService {
     void verifyAccountKey(String key);
     void updateLoginAttempts(String email, LoginType loginType);
     User getUserByUserId(String userId);
+
+    User getUserByEmail(String email);
+
+    ConfirmationEntity getUserCredentialById(Long userId);
 }
