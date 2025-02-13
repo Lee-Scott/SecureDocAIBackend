@@ -25,6 +25,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.LOGIN_PATH;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.getResponse;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.handleErrorResponse;
 import static javax.swing.text.html.FormSubmitEvent.MethodType.POST;
@@ -41,12 +42,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+
     private final UserService userService;
     private final JwtService jwtService;
 
 
     public AuthenticationFilter(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService) {
-        super(new AntPathRequestMatcher("user/login", POST.name()), authenticationManager);
+        super(new AntPathRequestMatcher(LOGIN_PATH, POST.name()), authenticationManager);
         this.userService = userService;
         this.jwtService = jwtService;
     }

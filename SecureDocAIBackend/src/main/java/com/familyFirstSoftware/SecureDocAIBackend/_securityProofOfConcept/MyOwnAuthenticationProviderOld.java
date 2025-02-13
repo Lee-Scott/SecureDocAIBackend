@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class MyOwnAuthenticationProvider implements AuthenticationProvider {
+public class MyOwnAuthenticationProviderOld implements AuthenticationProvider {
 
     private final UserDetailsService userDetailsService;
 
