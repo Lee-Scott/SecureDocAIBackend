@@ -1,4 +1,4 @@
-package com.familyFirstSoftware.SecureDocAIBackend._securityProofOfConcept;
+package com.familyFirstSoftware.SecureDocAIBackend._oldSecurityProofOfConcept;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;

@@ -21,7 +21,7 @@ public class User {
     private Long createdBy;
     private Long updatedBy;
 
-    private String userId; // Not the primary key that's in Auditable. String vs long as well
+    private Long userId; // Not the primary key that's in Auditable. String vs long as well
     private String firstName;
     private String lastName;
     private String email;

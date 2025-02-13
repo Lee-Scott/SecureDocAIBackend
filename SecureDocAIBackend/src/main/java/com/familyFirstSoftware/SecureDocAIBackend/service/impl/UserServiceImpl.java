@@ -139,10 +139,9 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public ConfirmationEntity getUserCredentialById(Long userId) {
-       Optional <ConfirmationEntity> credentialEntity = confirmationRepository.getCredentialByUserEntityId(userId);
-       return credentialEntity.orElseThrow(() -> new ApiException("User credentials not found"));
-
+    public CredentialEntity getUserCredentialById(Long userId) {
+        var credentialEntity = credentialRepository.getCredentialByUserEntityId(userId);
+        return credentialEntity.orElseThrow(() -> new ApiException("User credentials not found"));
     }
 
 

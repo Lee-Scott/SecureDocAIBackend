@@ -109,7 +109,7 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                     .claim(ROLE, user.getRole())
                     .expiration(Date.from(Instant.now().plusSeconds(getExpiration())))
                     .compact() : builder.get() // if it's an access token compact, or it's a refresh token, so we get the builder again
-                    .subject(user.getUserId())
+                    .subject(String.valueOf(user.getUserId()))
                     .expiration(Date.from(Instant.now().plusSeconds(getExpiration()))) // you can have a different expiration for refresh token
                     .compact();
 

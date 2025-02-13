@@ -23,6 +23,7 @@ public class Constants {
     public static final String LOGIN_PATH = "user/login";
     public static final String FAMILY_FIRST_SOFTWARE = "FAMILY_FIRST_SOFTWARE";
     public static final int NINETY_DAYS = 90;
+    public static final int STRENGTH = 12;
 
     public static final String TYPE = "typ";
     public static final String JWT_TYPE = "JWT";
