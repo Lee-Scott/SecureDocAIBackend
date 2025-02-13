@@ -1,8 +1,11 @@
 package com.familyFirstSoftware.SecureDocAIBackend.security;
 
 import com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication;
+import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.LoginRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
+import com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType;
 import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.fasterxml.jackson.core.JsonParser;
@@ -20,9 +23,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 
 import java.io.IOException;
+import java.util.Map;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.getResponse;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.handleErrorResponse;
 import static javax.swing.text.html.FormSubmitEvent.MethodType.POST;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * @author Lee Scott
@@ -60,8 +67,28 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
       }
     }
 
+    @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        super.successfulAuthentication(request, response, chain, authResult);
+        var user =  (User)authResult.getPrincipal();
+        userService.updateLoginAttempts(user.getEmail(), LoginType.LOGIN_SUCCESS);
+        var httpResponse = user.isMfa() ? sendQrCode(request, user) : sendResponse(request, response, user);
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.setStatus(OK.value());
+        var out = response.getOutputStream();
+        var mapper = new ObjectMapper();
+        mapper.writeValue(out, httpResponse);
+        out.flush();
+
+    }
+
+    private Response sendResponse(HttpServletRequest request, HttpServletResponse response, User user) {
+        jwtService.addCookie(response, user, TokenType.ACCESS);
+        jwtService.addCookie(response, user, TokenType.REFRESH);
+        return getResponse(request, Map.of("user", user), "Login successful.", OK);
+    }
+
+    private Object sendQrCode(HttpServletRequest request, User user) {
+        return getResponse(request, Map.of("user", user), "Please scan the QR code below.", OK);
     }
 
 }
