@@ -2,6 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.service;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 
@@ -22,5 +23,5 @@ public interface UserService {
 
     User getUserByEmail(String email);
 
-    ConfirmationEntity getUserCredentialById(Long userId);
+    CredentialEntity getUserCredentialById(Long userId);
 }

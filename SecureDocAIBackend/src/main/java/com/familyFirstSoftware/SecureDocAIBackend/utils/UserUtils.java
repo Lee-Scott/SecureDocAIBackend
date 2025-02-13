@@ -2,6 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.utils;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import org.springframework.beans.BeanUtils;
@@ -44,7 +45,7 @@ public class UserUtils {
 
     }
 
-    public static User fromUserEntity(UserEntity userEntity, RoleEntity role, ConfirmationEntity credentialEntity) {
+    public static User fromUserEntity(UserEntity userEntity, RoleEntity role, CredentialEntity credentialEntity) {
         User user = new User();
         BeanUtils.copyProperties(userEntity, user);
         user.setLastLogin(userEntity.getLastLogin().toString());
@@ -56,7 +57,7 @@ public class UserUtils {
         return user;
     }
 
-    private static boolean isCredentialNonExpired(ConfirmationEntity credentialEntity) {
+    private static boolean isCredentialNonExpired(CredentialEntity credentialEntity) {
         return credentialEntity.getUpdatedAt().plusDays(NINETY_DAYS).isAfter(LocalDateTime.now());
     }
 
