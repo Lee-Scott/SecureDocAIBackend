@@ -24,6 +24,9 @@ public class Constants {
     public static final String FAMILY_FIRST_SOFTWARE = "FAMILY_FIRST_SOFTWARE";
     public static final int NINETY_DAYS = 90;
     public static final int STRENGTH = 12;
+    //public static final String EMAIL_REGEX = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+    public static final String[] PUBLIC_URLS = { "/user/resetpassword/reset/**", "/user/verify/resetpassword/**", "/user/resetpassword/**", "/user/verify/qrcode/**", "/user/login/**", "/user/verify/account/**", "/user/register/**", "/user/new/password/**", "/user/verify/**", "/user/resetpassword/**", "/user/image/**", "/user/verify/password/**" };
+    public static final String OPTIONS_HTTP_METHOD = "OPTIONS";
 
     public static final String TYPE = "typ";
     public static final String JWT_TYPE = "JWT";
