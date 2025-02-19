@@ -10,11 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
-import org.springframework.security.authentication.AuthenticationManager;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Map;
+
 
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.getResponse;
 import static java.util.Collections.emptyMap;
