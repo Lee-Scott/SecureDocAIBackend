@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
+import static com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication.authenticated;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.ACCESS;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.REFRESH;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.handleErrorResponse;
+import static java.util.Arrays.asList;
 import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
 
 /**
@@ -42,31 +44,23 @@ import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthorizationFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
-    /*
-        This filter runs every time a request comes into the application. It runs once.
-        If we can access the access token, and we set the authentication context using the access token then we can filterChain.doFilter(request, response);
-         otherwise we can see if we can find the refresh token and create a new access token and set the authentication context using the new access token
-         else we can clear the authentication context
-     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             var accessToken = jwtService.extractToken(request, ACCESS.getValue());
-            if (accessToken.isPresent() && jwtService.getTokenData(accessToken.get(), TokenData::isValid)) { // present and valid
+            if (accessToken.isPresent() && jwtService.getTokenData(accessToken.get(), TokenData::isValid)) {
                 SecurityContextHolder.getContext().setAuthentication(getAuthentication(accessToken.get(), request));
                 RequestContext.setUserId(jwtService.getTokenData(accessToken.get(), TokenData::getUser).getId());
             } else {
-                // Look for refresh token
                 var refreshToken = jwtService.extractToken(request, REFRESH.getValue());
-                if (accessToken.isPresent() && jwtService.getTokenData(accessToken.get(), TokenData::isValid)) {
+                if(refreshToken.isPresent() && jwtService.getTokenData(refreshToken.get(), TokenData::isValid)) {
                     var user = jwtService.getTokenData(refreshToken.get(), TokenData::getUser);
-                    SecurityContextHolder.getContext().setAuthentication(getAuthentication(jwtService.createToken(user, Token::getAccess), request)); // create access token
-                    jwtService.addCookie(response, user, TokenType.ACCESS);
+                    SecurityContextHolder.getContext().setAuthentication(getAuthentication(jwtService.createToken(user, Token::getAccess), request));
+                    jwtService.addCookie(response, user, ACCESS);
                     RequestContext.setUserId(user.getId());
-                } else { // we don't have access or refresh token
+                } else {
                     SecurityContextHolder.clearContext();
                 }
             }
@@ -79,15 +73,14 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS.name()) || Arrays.asList(PUBLIC_URLS).contains(request.getRequestURI());
-        if(shouldNotFilter) { // if there is no user, it is the system
-            RequestContext.setUserId(0L);
-        }
+        //var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS.name()) || asList(PUBLIC_ROUTES).contains(request.getRequestURI());
+        var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS.name()) || asList(PUBLIC_ROUTES).contains(request.getRequestURI());
+        if(shouldNotFilter) { RequestContext.setUserId(0L); }
         return shouldNotFilter;
     }
 
     private Authentication getAuthentication(String token, HttpServletRequest request) {
-        var authentication = ApiAuthentication.authenticated(jwtService.getTokenData(token, TokenData::getUser), jwtService.getTokenData(token, TokenData::getAuthorities));
+        var authentication = authenticated(jwtService.getTokenData(token, TokenData::getUser), jwtService.getTokenData(token, TokenData::getAuthorities));
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return authentication;
     }

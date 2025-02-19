@@ -27,8 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Optional;
-
 
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.createUserEntity;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.fromUserEntity;
@@ -59,7 +57,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email));
-        var credentialEntity = new CredentialEntity(userEntity, password);
+        var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password));
         credentialRepository.save(credentialEntity);
         var confirmationEntity = new ConfirmationEntity(userEntity);
         confirmationRepository.save(confirmationEntity);
