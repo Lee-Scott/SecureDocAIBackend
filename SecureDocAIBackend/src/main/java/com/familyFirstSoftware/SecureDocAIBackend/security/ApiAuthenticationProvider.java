@@ -5,6 +5,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.UserPrincipal;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -30,7 +31,6 @@ import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.NINE
 @Component
 @RequiredArgsConstructor
 public class ApiAuthenticationProvider implements AuthenticationProvider {
-
 
     private final UserService userService;
     private final BCryptPasswordEncoder encoder;
