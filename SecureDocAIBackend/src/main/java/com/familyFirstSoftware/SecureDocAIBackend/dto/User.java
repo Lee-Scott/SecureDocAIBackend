@@ -17,11 +17,12 @@ import java.time.LocalDateTime;
 
 @Data
 public class User {
+
     private Long id;
     private Long createdBy;
     private Long updatedBy;
 
-    private Long userId; // Not the primary key that's in Auditable. String vs long as well
+    private String userId; // Not the primary key that's in Auditable. String vs long as well
     private String firstName;
     private String lastName;
     private String email;
