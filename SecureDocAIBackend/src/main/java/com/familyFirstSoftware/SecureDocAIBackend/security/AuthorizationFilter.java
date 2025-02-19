@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,6 +26,7 @@ import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.ACCESS;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.REFRESH;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.handleErrorResponse;
+import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
 
 /**
  * @author Lee Scott
@@ -40,8 +42,7 @@ import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.hand
 @RequiredArgsConstructor
 @Slf4j
 public class AuthorizationFilter extends OncePerRequestFilter {
-
-
+    @Autowired
     private JwtService jwtService;
 
     /*
@@ -78,7 +79,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS_HTTP_METHOD) || Arrays.asList(PUBLIC_URLS).contains(request.getRequestURI());
+        var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS.name()) || Arrays.asList(PUBLIC_URLS).contains(request.getRequestURI());
         if(shouldNotFilter) { // if there is no user, it is the system
             RequestContext.setUserId(0L);
         }

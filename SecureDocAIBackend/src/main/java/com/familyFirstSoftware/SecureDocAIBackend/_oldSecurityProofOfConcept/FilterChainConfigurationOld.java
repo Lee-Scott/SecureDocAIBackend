@@ -40,7 +40,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @AllArgsConstructor
 public class FilterChainConfigurationOld {
-
+    /*
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Bean
@@ -62,7 +62,7 @@ public class FilterChainConfigurationOld {
     }
 
     // Overwriting the default UserDetails implementation
-    /*@Bean
+    @Bean
     public UserDetailsService userDetailsService() {
         var lee = User.withDefaultPasswordEncoder()
                 .username("lee")

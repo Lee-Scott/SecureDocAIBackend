@@ -38,16 +38,17 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 1/12/2025
+ *
+ * Todo: rename not Api but with our app name like SecureDocAI
  */
 
 @Slf4j
-public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-
+public class ApiAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     private final UserService userService;
     private final JwtService jwtService;
 
 
-    public AuthenticationFilter(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService) {
+    public ApiAuthenticationFilter(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService) {
         super(new AntPathRequestMatcher(LOGIN_PATH, POST.name()), authenticationManager);
         this.userService = userService;
         this.jwtService = jwtService;

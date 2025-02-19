@@ -16,5 +16,5 @@ EMAIL_USERNAME:
 EMAIL_PASSWORD: 
 VERIFY_EMAIL_HOST: http://localhost:8085 # Change to 3000 or React port'
 
-secret: ${SECRET}
-expiration: 432_000_000
+JWT_SECRET: ${SECRET}
+JWT_EXPIRATION: 432_000_000

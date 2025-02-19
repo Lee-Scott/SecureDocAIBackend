@@ -164,7 +164,7 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
 
     @Override
     public Optional<String> extractToken(HttpServletRequest request, String cookieName) {
-        return extractToken(request, cookieName);
+        return extractToken.apply(request, cookieName);
 
     }
 
