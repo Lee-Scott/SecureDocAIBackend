@@ -5,6 +5,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.UserPrincipal;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.NINE
  * Todo: shouldn't be APIAuthenticationProvider. Should be AISecureAuthenticationProvider or something
  */
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ApiAuthenticationProvider implements AuthenticationProvider {
@@ -41,18 +43,36 @@ public class ApiAuthenticationProvider implements AuthenticationProvider {
     // Todo: refactor for SOLD principals
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-       var apiAuthentication = authenticationFunction.apply(authentication);
-       var user = userService.getUserByEmail(apiAuthentication.getEmail());
-       if(user != null){ // shouldn't be possible, or it would break at var user = ...
-           var userCredential = userService.getUserCredentialById(user.getUserId());
-           if(user.isCreditNonExpired()){throw new ApiException("Credential are expired. Please reset your password.");}
+        var apiAuthentication = authenticationFunction.apply(authentication);
+        var user = userService.getUserByEmail(apiAuthentication.getEmail());
+
+        if (user != null) {
+            log.info("User found: {}", user.getEmail());  // Debug: Confirm user retrieval
+
+            var userCredential = userService.getUserCredentialById(user.getUserId());
+            if (userCredential == null) {
+                log.error("No credentials found for user ID: {}", user.getUserId());
+                throw new ApiException("User credentials not found.");
+            }
+
+            log.info("Retrieved hashed password: {}", userCredential.getPassword());
+
             var userPrincipal = new UserPrincipal(user, userCredential);
-            validAccount.accept(userPrincipal);
-            if(encoder.matches(apiAuthentication.getPassword(), userPrincipal.getPassword())){
+            validAccount.accept(userPrincipal);  // Ensure account validation does not throw errors unexpectedly
+
+            if (encoder.matches(apiAuthentication.getPassword(), userPrincipal.getPassword())) {
+                log.info("Password matches for user: {}", user.getEmail());
                 return ApiAuthentication.authenticated(user, userPrincipal.getAuthorities());
-            } else throw new BadCredentialsException("Email and/or password is incorrect. Please try again.");
-       } throw new ApiException("Unable to authenticate.");
+            } else {
+                log.warn("Incorrect password for user: {}", user.getEmail());
+                throw new BadCredentialsException("Email and/or password is incorrect. Please try again.");
+            }
+        }
+
+        log.error("User not found for email: {}", apiAuthentication.getEmail());
+        throw new ApiException("Unable to authenticate.");
     }
+
 
 
     @Override
