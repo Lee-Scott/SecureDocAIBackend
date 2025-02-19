@@ -4,6 +4,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ import java.util.Collection;
  * @since 2/13/2025
  */
 
+@Slf4j
 @RequiredArgsConstructor
 public class UserPrincipal implements UserDetails {
 
@@ -32,6 +34,10 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
+        if (credentialEntity == null) {
+            log.error("User credentials are null for user: {}", user.getEmail());
+            return null;
+        }
         return credentialEntity.getPassword();
     }
 

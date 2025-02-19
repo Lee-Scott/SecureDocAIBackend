@@ -29,6 +29,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 @JsonInclude(NON_DEFAULT)
 public class CredentialEntity extends Auditable {
 
+    @Getter
     private String password;
 
     @OneToOne(targetEntity = UserEntity.class, fetch = FetchType.EAGER)
@@ -43,5 +44,6 @@ public class CredentialEntity extends Auditable {
         this.userEntity = userEntity;
         this.password = password;
     }
+
 }
 
