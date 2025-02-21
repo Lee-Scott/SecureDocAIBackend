@@ -2,7 +2,9 @@ package com.familyFirstSoftware.SecureDocAIBackend.security;
 
 import com.familyFirstSoftware.SecureDocAIBackend.handler.ApiAccessDeniedHandler;
 import com.familyFirstSoftware.SecureDocAIBackend.handler.ApiAuthenticationEntryPoint;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -48,7 +50,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
  *
  */
 
-
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -67,18 +69,28 @@ public class FilterChainConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)) // Stateless because we are not doing cookie-based authentication
                 .exceptionHandling(exception ->
                         exception.accessDeniedHandler(apiAccessDeniedHandler)
-                                .authenticationEntryPoint(apiAuthenticationEntryPoint))
+                                .authenticationEntryPoint(apiAuthenticationEntryPoint)
+                )
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(PUBLIC_URLS).permitAll()
                                 .requestMatchers(OPTIONS).permitAll()
-                                .requestMatchers(DELETE, "/user/delete/**")
-                                .hasAnyAuthority("user:delete")
-                                .requestMatchers(DELETE, "/document/delete/**")
-                                .hasAnyAuthority("document:delete")
-                                .anyRequest().authenticated())
+                                .requestMatchers(DELETE, "/user/delete/**").hasAnyAuthority("user:delete")
+                                .requestMatchers(DELETE, "/document/delete/**").hasAnyAuthority("document:delete")
+                                .anyRequest().authenticated()
+                )
+                // Additional exception handling for debugging
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((req, res, ex1) -> {
+                            log.error("Access Denied: {}", req.getRequestURI());
+                            res.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+                        })
+                )
+                // Apply additional configurers
                 .with(apiHttpConfigurer, withDefaults());
+
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

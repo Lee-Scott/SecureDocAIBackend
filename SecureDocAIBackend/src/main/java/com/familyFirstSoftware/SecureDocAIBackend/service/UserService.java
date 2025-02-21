@@ -5,6 +5,8 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Query;
 
 /**
  * @author Lee Scott
@@ -18,10 +20,12 @@ public interface UserService {
     void createUser(String firstName, String lastName, String email, String password);
     RoleEntity getRoleName(String name);
     void verifyAccountKey(String key);
-    void updateLoginAttempts(String email, LoginType loginType);
+    void updateLoginAttempt(String email, LoginType loginType);
     User getUserByUserId(String userId);
-
     User getUserByEmail(String email);
-
-    CredentialEntity getUserCredentialById(Long userId);
+    CredentialEntity getUserCredentialById(Long id);
+    User setUpMfa(Long id);
+    User cancelMfa(Long id);
+    User verifyQrCode(String userId, String qrCode);
 }
+

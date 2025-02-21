@@ -64,7 +64,7 @@ public class UserServiceTest {
         credentialEntity.setPassword("password");
         credentialEntity.setUserEntity(userEntity);
 
-        when(userRepository.findUserByUserId("1")).thenReturn(Optional.of(userEntity));
+        when(userRepository.findUserByUserId("1L")).thenReturn(Optional.of(userEntity));
         when(credentialRepository.getCredentialByUserEntityId(1L)).thenReturn(Optional.of(credentialEntity));
 
         // Act / When
