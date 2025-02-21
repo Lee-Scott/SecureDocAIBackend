@@ -5,11 +5,12 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.TokenData;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType;
 import com.familyFirstSoftware.SecureDocAIBackend.function.TriConsumer;
+
 import com.familyFirstSoftware.SecureDocAIBackend.security.JwtConfiguration;
 import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
-import io.jsonwebtoken.Claims;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -23,23 +24,28 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-
-import java.util.*;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import static java.util.Date.from;
-import static java.time.Instant.now;
-
 
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
-
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.ACCESS;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.REFRESH;
+import static io.jsonwebtoken.Header.JWT_TYPE;
+import static io.jsonwebtoken.Header.TYPE;
+import static java.time.Instant.now;
 import static java.util.Arrays.stream;
-
-
+import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static org.springframework.boot.web.server.Cookie.SameSite.NONE;
 import static org.springframework.security.core.authority.AuthorityUtils.commaSeparatedStringToAuthorityList;
@@ -85,7 +91,7 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
             Jwts.builder()
                     .header().add(Map.of(TYPE, JWT_TYPE))
                     .and()
-                    .audience().add(GET_ARRAYS_LLC)
+                    .audience().add(FAMILY_FIRST_SOFTWARE)
                     .and()
                     .id(UUID.randomUUID().toString())
                     .issuedAt(from(now()))

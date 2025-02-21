@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 
+
 import com.familyFirstSoftware.SecureDocAIBackend.cache.CacheStore;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
@@ -8,16 +9,20 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
-import com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.ConfirmationRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.CredentialRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.RoleRepository;
-import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.UserRepository;
-import com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils;
+import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
+import dev.samstevens.totp.time.SystemTimeProvider;
+import dev.samstevens.totp.time.TimeProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +32,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
+
+import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
-import static org.apache.logging.log4j.util.Strings.EMPTY;
+import static java.time.LocalDateTime.now;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
  * @author Lee Scott
@@ -44,15 +53,13 @@ import static org.apache.logging.log4j.util.Strings.EMPTY;
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
-
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CredentialRepository credentialRepository;
     private final ConfirmationRepository confirmationRepository;
-    private final BCryptPasswordEncoder encoder; // TODO: Never used
-    private final ApplicationEventPublisher publisher; // need to publish the user has been created to send an email
+    private final BCryptPasswordEncoder encoder;
     private final CacheStore<String, Integer> userCache;
-
+    private final ApplicationEventPublisher publisher;
 
     @Override
     public void createUser(String firstName, String lastName, String email, String password) {
@@ -61,68 +68,49 @@ public class UserServiceImpl implements UserService {
         credentialRepository.save(credentialEntity);
         var confirmationEntity = new ConfirmationEntity(userEntity);
         confirmationRepository.save(confirmationEntity);
-        publisher.publishEvent(new UserEvent(userEntity, EventType.REGISTRATION, Map.of("key", confirmationEntity.getKey())));
-
-    }
-
-
-    private UserEntity createNewUser(String firstName, String lastName, String email) {
-        var role = getRoleName(Authority.USER.name()); // gets role name
-        return createUserEntity(firstName, lastName, email, role);
+        publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
     }
 
     @Override
     public RoleEntity getRoleName(String name) {
         var role = roleRepository.findByNameIgnoreCase(name);
-        return role.orElseThrow(() -> new RuntimeException("Role not found"));
+        return role.orElseThrow(() -> new ApiException("Role not found"));
     }
 
     @Override
     public void verifyAccountKey(String key) {
         var confirmationEntity = getUserConfirmation(key);
-        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        UserEntity userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
         userEntity.setEnabled(true);
         userRepository.save(userEntity);
         confirmationRepository.delete(confirmationEntity);
     }
 
-
-
     @Override
     public void updateLoginAttempt(String email, LoginType loginType) {
         var userEntity = getUserEntityByEmail(email);
         RequestContext.setUserId(userEntity.getId());
-        switch (loginType){
+        switch (loginType) {
             case LOGIN_ATTEMPT -> {
-                if(userCache.get(userEntity.getEmail()) == null) { // first time logging in?
+                if (userCache.get(userEntity.getEmail()) == null) {
                     userEntity.setLoginAttempts(0);
                     userEntity.setAccountNonLocked(true);
-
                 }
                 userEntity.setLoginAttempts(userEntity.getLoginAttempts() + 1);
                 userCache.put(userEntity.getEmail(), userEntity.getLoginAttempts());
-                if(userCache.get(userEntity.getEmail()) > 5) { // lock account TODO: send email
+                if (userCache.get(userEntity.getEmail()) > 5) {
                     userEntity.setAccountNonLocked(false);
-
                 }
             }
-
             case LOGIN_SUCCESS -> {
                 userEntity.setAccountNonLocked(true);
                 userEntity.setLoginAttempts(0);
-                userEntity.setLastLogin(LocalDateTime.now());
+                userEntity.setLastLogin(now());
                 userCache.evict(userEntity.getEmail());
-
             }
-
-            // TODO: Try uncommenting and playing around with this for error handling
-            //default -> throw new RuntimeException("Invalid login type");
-
         }
         userRepository.save(userEntity);
-
     }
-
 
     @Override
     public User getUserByUserId(String userId) {
@@ -133,17 +121,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByEmail(String email) {
         UserEntity userEntity = getUserEntityByEmail(email);
-        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
-
-
 
     @Override
     public CredentialEntity getUserCredentialById(Long userId) {
-        var credentialEntity = credentialRepository.getCredentialByUserEntityId(userId);
-        return credentialEntity.orElseThrow(() -> new ApiException("User credentials not found"));
+        var credentialById = credentialRepository.getCredentialByUserEntityId(userId);
+        return credentialById.orElseThrow(() -> new ApiException("Unable to find user credential"));
     }
-
 
     @Override
     public User setUpMfa(Long id) {
@@ -155,7 +140,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
-
 
     @Override
     public User cancelMfa(Long id) {
@@ -169,15 +153,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User verifyQrCode(String userId, String qrCode) {
-        return null;
+        var userEntity = getUserEntityByUserId(userId);
+        verifyCode(qrCode, userEntity.getQrCodeSecret());
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
+    private boolean verifyCode(String qrCode, String qrCodeSecret) {
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        CodeVerifier codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        if(codeVerifier.isValidCode(qrCodeSecret, qrCode)) {
+            return true;
+        } else {
+            throw new ApiException("Invalid QR code. Please try again.");
+        }
+    }
+
+    private UserEntity getUserEntityByUserId(String userId) {
+        var userByUserId = userRepository.findUserByUserId(userId);
+        return userByUserId.orElseThrow(() -> new ApiException("User not found"));
+    }
 
     private UserEntity getUserEntityById(Long id) {
         var userById = userRepository.findById(id);
         return userById.orElseThrow(() -> new ApiException("User not found"));
     }
-
 
     private UserEntity getUserEntityByEmail(String email) {
         var userByEmail = userRepository.findUserByEmailIgnoreCase(email);
@@ -185,7 +185,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private ConfirmationEntity getUserConfirmation(String key) {
-        return confirmationRepository.findByKey(key).orElseThrow(() -> new RuntimeException("Confirmation key not found"));
+        return confirmationRepository.findByKey(key).orElseThrow(() -> new ApiException("Confirmation key not found"));
+    }
+
+    private UserEntity createNewUser(String firstName, String lastName, String email) {
+        var role = getRoleName(Authority.USER.name());
+        return createUserEntity(firstName, lastName, email, role);
     }
 }
-

@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -44,6 +45,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthorizationFilter extends OncePerRequestFilter {
+
     private final JwtService jwtService;
 
     @Override
@@ -74,7 +76,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         //var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS.name()) || asList(PUBLIC_ROUTES).contains(request.getRequestURI());
-        var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS.name()) || asList(PUBLIC_ROUTES).contains(request.getRequestURI());
+        var shouldNotFilter = request.getMethod().equalsIgnoreCase(HttpMethod.OPTIONS.name()) || asList(PUBLIC_ROUTES).contains(request.getRequestURI());
         if(shouldNotFilter) { RequestContext.setUserId(0L); }
         return shouldNotFilter;
     }

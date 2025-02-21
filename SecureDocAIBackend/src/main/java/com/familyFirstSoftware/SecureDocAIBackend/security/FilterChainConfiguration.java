@@ -50,13 +50,11 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
  *
  */
 
-@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class FilterChainConfiguration {
-
     private final ApiAccessDeniedHandler apiAccessDeniedHandler;
     private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
     private final ApiHttpConfigurer apiHttpConfigurer;
@@ -66,43 +64,36 @@ public class FilterChainConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)) // Stateless because we are not doing cookie-based authentication
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .exceptionHandling(exception ->
                         exception.accessDeniedHandler(apiAccessDeniedHandler)
-                                .authenticationEntryPoint(apiAuthenticationEntryPoint)
-                )
+                                .authenticationEntryPoint(apiAuthenticationEntryPoint))
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(PUBLIC_URLS).permitAll()
                                 .requestMatchers(OPTIONS).permitAll()
-                                .requestMatchers(DELETE, "/user/delete/**").hasAnyAuthority("user:delete")
-                                .requestMatchers(DELETE, "/document/delete/**").hasAnyAuthority("document:delete")
-                                .anyRequest().authenticated()
-                )
-                // Additional exception handling for debugging
-                .exceptionHandling(ex -> ex
-                        .accessDeniedHandler((req, res, ex1) -> {
-                            log.error("Access Denied: {}", req.getRequestURI());
-                            res.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
-                        })
-                )
-                // Apply additional configurers
+                                .requestMatchers(DELETE, "/user/delete/**")
+                                .hasAnyAuthority("user:delete")
+                                .requestMatchers(DELETE, "/document/delete/**")
+                                .hasAnyAuthority("document:delete")
+                                .anyRequest().authenticated())
                 .with(apiHttpConfigurer, withDefaults());
-
         return http.build();
     }
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setAllowedOrigins(List.of("http://familyfirstsoftware.com", "http://localhost:4200", "http://localhost:3000", "http://localhost:5173"));
+        corsConfiguration.setAllowedOrigins(List.of("http://securedoc.com", "http://localhost:4200", "http://localhost:3000"));
         corsConfiguration.setAllowedHeaders(Arrays.asList(ORIGIN, ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE, ACCEPT, AUTHORIZATION, X_REQUESTED_WITH, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_REQUEST_HEADERS, ACCESS_CONTROL_ALLOW_CREDENTIALS, FILE_NAME));
         corsConfiguration.setExposedHeaders(Arrays.asList(ORIGIN, ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE, ACCEPT, AUTHORIZATION, X_REQUESTED_WITH, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_REQUEST_HEADERS, ACCESS_CONTROL_ALLOW_CREDENTIALS, FILE_NAME));
-        corsConfiguration.setAllowedMethods(Arrays.asList(GET.name(), POST.name(), PUT.name(), PATCH.name(), DELETE.name(), OPTIONS.name())); // accepts these requests from the List.of above
+        corsConfiguration.setAllowedMethods(Arrays.asList(GET.name(), POST.name(), PUT.name(), PATCH.name(), DELETE.name(), OPTIONS.name()));
         corsConfiguration.setMaxAge(3600L);
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(BASE_PATH, corsConfiguration);
         return source;
     }
 }
+
+
+
