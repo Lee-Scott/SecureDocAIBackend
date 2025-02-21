@@ -5,12 +5,21 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
+import dev.samstevens.totp.code.HashingAlgorithm;
+import dev.samstevens.totp.qr.QrData;
+import dev.samstevens.totp.qr.ZxingPngQrGenerator;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.FAMILY_FIRST_SOFTWARE;
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.NINETY_DAYS;
+import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 /**
@@ -61,6 +70,30 @@ public class UserUtils {
         return credentialEntity.getUpdatedAt().plusDays(NINETY_DAYS).isAfter(LocalDateTime.now());
     }
 
+    public static BiFunction<String, String, QrData> qrDataFunction = (email, qrCodeSecret) -> new QrData.Builder()
+            .issuer(FAMILY_FIRST_SOFTWARE)
+            .label(email)
+            .secret(qrCodeSecret)
+            .algorithm(HashingAlgorithm.SHA1)
+            .digits(6)
+            .period(30) // refreshes every 30 seconds
+            .build();
+
+
+    public static BiFunction<String, String, String> qrCodeImageUri = (email, qrCodeSecret) -> {
+        var data = qrDataFunction.apply(email, qrCodeSecret);
+        var generator = new ZxingPngQrGenerator();
+        byte[] imageData;
+        try {
+            imageData = generator.generate(data);
+        } catch (Exception e) {
+            throw new ApiException("Unable to create QR code URI");
+        }
+        ;
+        return getDataUriForImage(imageData, generator.getImageMimeType());
+    };
+
+    public static Supplier<String> qrCodeSecret = () -> new DefaultSecretGenerator().generate();
 
 }
 

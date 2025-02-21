@@ -59,7 +59,7 @@ public class ApiAuthenticationFilter extends AbstractAuthenticationProcessingFil
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
       try {
           var user = new ObjectMapper().configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true).readValue(request.getInputStream(), LoginRequest.class);
-          userService.updateLoginAttempts(user.getEmail(), LoginType.LOGIN_ATTEMPT);
+          userService.updateLoginAttempt(user.getEmail(), LoginType.LOGIN_ATTEMPT);
           var authentication = ApiAuthentication.unAuthenticated(user.getEmail(), user.getPassword());
           return getAuthenticationManager().authenticate(authentication);
 
@@ -73,7 +73,7 @@ public class ApiAuthenticationFilter extends AbstractAuthenticationProcessingFil
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         var user =  (User)authResult.getPrincipal();
-        userService.updateLoginAttempts(user.getEmail(), LoginType.LOGIN_SUCCESS);
+        userService.updateLoginAttempt(user.getEmail(), LoginType.LOGIN_SUCCESS);
         var httpResponse = user.isMfa() ? sendQrCode(request, user) : sendResponse(request, response, user);
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setStatus(OK.value());

@@ -28,8 +28,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.createUserEntity;
-import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.fromUserEntity;
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
+import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 /**
  * @author Lee Scott
@@ -86,8 +86,10 @@ public class UserServiceImpl implements UserService {
         confirmationRepository.delete(confirmationEntity);
     }
 
+
+
     @Override
-    public void updateLoginAttempts(String email, LoginType loginType) {
+    public void updateLoginAttempt(String email, LoginType loginType) {
         var userEntity = getUserEntityByEmail(email);
         RequestContext.setUserId(userEntity.getId());
         switch (loginType){
@@ -121,7 +123,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    // TODO: implement this
+
     @Override
     public User getUserByUserId(String userId) {
         var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
@@ -140,6 +142,40 @@ public class UserServiceImpl implements UserService {
     public CredentialEntity getUserCredentialById(Long userId) {
         var credentialEntity = credentialRepository.getCredentialByUserEntityId(userId);
         return credentialEntity.orElseThrow(() -> new ApiException("User credentials not found"));
+    }
+
+
+    @Override
+    public User setUpMfa(Long id) {
+        var userEntity = getUserEntityById(id);
+        var codeSecret = qrCodeSecret.get();
+        userEntity.setQrCodeImageUri(qrCodeImageUri.apply(userEntity.getEmail(), codeSecret));
+        userEntity.setQrCodeSecret(codeSecret);
+        userEntity.setMfa(true);
+        userRepository.save(userEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+
+    @Override
+    public User cancelMfa(Long id) {
+        var userEntity = getUserEntityById(id);
+        userEntity.setMfa(false);
+        userEntity.setQrCodeSecret(EMPTY);
+        userEntity.setQrCodeImageUri(EMPTY);
+        userRepository.save(userEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+    @Override
+    public User verifyQrCode(String userId, String qrCode) {
+        return null;
+    }
+
+
+    private UserEntity getUserEntityById(Long id) {
+        var userById = userRepository.findById(id);
+        return userById.orElseThrow(() -> new ApiException("User not found"));
     }
 
 
