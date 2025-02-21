@@ -1,25 +1,28 @@
 package com.familyFirstSoftware.SecureDocAIBackend.security;
 
+import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.UserPrincipal;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
-import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
+
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.NINETY_DAYS;
+
 import static com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication.authenticated;
+import static java.time.LocalDateTime.now;
+
 
 /**
  * @author Lee Scott
@@ -31,7 +34,6 @@ import static com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthenticatio
  * Todo: shouldn't be APIAuthenticationProvider. Should be AISecureAuthenticationProvider or something
  */
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ApiAuthenticationProvider implements AuthenticationProvider {
@@ -48,14 +50,7 @@ public class ApiAuthenticationProvider implements AuthenticationProvider {
             //if(!user.isCredentialsNonExpired()) { throw new ApiException("Credentials are expired. Please reset your password"); }
             var userPrincipal = new UserPrincipal(user, userCredential);
             validAccount.accept(userPrincipal);
-
-            log.info("Raw password: {}", apiAuthentication.getPassword());
-            log.info("Stored password: {}", userCredential.getPassword());
-            log.info("Match: {}", encoder.matches(apiAuthentication.getPassword().trim(), userCredential.getPassword()));
-
-
-            if (encoder.matches(apiAuthentication.getPassword().trim(), userCredential.getPassword())) {
-
+            if(encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
                 return authenticated(user, userPrincipal.getAuthorities());
             } else throw new BadCredentialsException("Email and/or password incorrect. Please try again");
         } throw new ApiException("Unable to authenticate");

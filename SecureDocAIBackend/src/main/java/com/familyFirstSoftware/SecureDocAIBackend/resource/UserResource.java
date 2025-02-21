@@ -2,9 +2,13 @@ package com.familyFirstSoftware.SecureDocAIBackend.resource;
 
 import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.QrCodeRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.UserRequest;
+import com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType;
+import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ import static java.util.Collections.emptyMap;
 @RequiredArgsConstructor
 public class UserResource {
     private final UserService userService;
+    private final JwtService jwtService;
 
     @PostMapping(path = {"/register"})
     public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
@@ -60,6 +65,14 @@ public class UserResource {
         userService.cancelMfa(userPrincipal.getId());
         var user = userService.setUpMfa(userPrincipal.getId());
         return ResponseEntity.ok(getResponse(request, Map.of("user", user), "MFA cancelled.", HttpStatus.OK));
+    }
+
+    @PostMapping(path = {"/verify/qrcode"})
+    public ResponseEntity<Response> verifyQrcode(@RequestBody QrCodeRequest qrCodeRequest, HttpServletRequest request, HttpServletResponse response) {
+        var user = userService.verifyQrCode(qrCodeRequest.getUserId(), qrCodeRequest.getQrCode());
+        jwtService.addCookie(response, user, TokenType.ACCESS);
+        jwtService.addCookie(response, user, TokenType.REFRESH);
+        return ResponseEntity.ok(getResponse(request, Map.of("user", user), "QR Code Verified.", HttpStatus.OK));
     }
 
 

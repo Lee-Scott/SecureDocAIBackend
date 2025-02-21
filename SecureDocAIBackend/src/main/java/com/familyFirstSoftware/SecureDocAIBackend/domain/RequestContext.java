@@ -9,11 +9,9 @@ package com.familyFirstSoftware.SecureDocAIBackend.domain;
  */
 
 public class RequestContext {
-    // ThreadLocal to store the current user ID for the request
     private static final ThreadLocal<Long> USER_ID = new ThreadLocal<>();
 
-    private RequestContext() {
-    }
+    private RequestContext() {}
 
     public static void start() {
         USER_ID.remove();
@@ -27,4 +25,3 @@ public class RequestContext {
         return USER_ID.get();
     }
 }
-

@@ -31,7 +31,6 @@ public class ApiHttpConfigurer extends AbstractHttpConfigurer<ApiHttpConfigurer,
     @Override
     public void init(HttpSecurity http) throws Exception {
         http.authenticationProvider(apiAuthenticationProvider);
-
     }
 
     @Override
@@ -40,4 +39,3 @@ public class ApiHttpConfigurer extends AbstractHttpConfigurer<ApiHttpConfigurer,
         http.addFilterAfter(new ApiAuthenticationFilter(authenticationConfiguration.getAuthenticationManager(), userService, jwtService), UsernamePasswordAuthenticationFilter.class);
     }
 }
-

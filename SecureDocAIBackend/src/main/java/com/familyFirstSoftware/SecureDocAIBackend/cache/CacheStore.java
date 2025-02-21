@@ -27,24 +27,23 @@ public class CacheStore<K, V> {
 
     public CacheStore(int expiryDuration, TimeUnit timeUnit) {
         cache = CacheBuilder.newBuilder()
-               .expireAfterWrite(expiryDuration, timeUnit)
+                .expireAfterWrite(expiryDuration, timeUnit)
                 .concurrencyLevel(Runtime.getRuntime().availableProcessors())
-               .build();
-
+                .build();
     }
 
     public V get(@NotNull K key) {
-        log.info("Retrieving from cache: {}", key.toString());
+        log.info("Retrieving from Cache with key {}", key.toString());
         return cache.getIfPresent(key);
     }
 
     public void put(@NotNull K key, @NotNull V value) {
-        log.info("Adding to cache: {}", key.toString());
+        log.info("Storing record in Cache for key {}", key.toString());
         cache.put(key, value);
     }
 
     public void evict(@NotNull K key) {
-        log.info("Evicting from cache: {}", key.toString());
+        log.info("Removing from Cache with key {}", key.toString());
         cache.invalidate(key);
     }
 }

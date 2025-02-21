@@ -20,12 +20,8 @@ import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.STRE
 
 @Configuration
 public class SecurityConfig {
-
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(STRENGTH);
     }
-
-
 }
-
