@@ -1,6 +1,5 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 
-
 import com.familyFirstSoftware.SecureDocAIBackend.cache.CacheStore;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
@@ -35,7 +34,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
-
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -90,15 +88,17 @@ public class UserServiceImpl implements UserService {
     public void updateLoginAttempt(String email, LoginType loginType) {
         var userEntity = getUserEntityByEmail(email);
         RequestContext.setUserId(userEntity.getId());
+        Integer loginAttempts = userCache.get(userEntity.getEmail());
         switch (loginType) {
             case LOGIN_ATTEMPT -> {
-                if (userCache.get(userEntity.getEmail()) == null) {
+                if (loginAttempts == null) {
                     userEntity.setLoginAttempts(0);
                     userEntity.setAccountNonLocked(true);
+                } else {
+                    userEntity.setLoginAttempts(loginAttempts + 1);
                 }
-                userEntity.setLoginAttempts(userEntity.getLoginAttempts() + 1);
                 userCache.put(userEntity.getEmail(), userEntity.getLoginAttempts());
-                if (userCache.get(userEntity.getEmail()) > 5) {
+                if (userEntity.getLoginAttempts() > 5) {
                     userEntity.setAccountNonLocked(false);
                 }
             }
@@ -162,7 +162,7 @@ public class UserServiceImpl implements UserService {
         TimeProvider timeProvider = new SystemTimeProvider();
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         CodeVerifier codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
-        if(codeVerifier.isValidCode(qrCodeSecret, qrCode)) {
+        if (codeVerifier.isValidCode(qrCodeSecret, qrCode)) {
             return true;
         } else {
             throw new ApiException("Invalid QR code. Please try again.");

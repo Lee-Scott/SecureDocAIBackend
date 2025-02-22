@@ -4,6 +4,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 

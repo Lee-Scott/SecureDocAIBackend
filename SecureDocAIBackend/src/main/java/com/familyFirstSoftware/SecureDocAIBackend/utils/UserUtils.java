@@ -30,9 +30,12 @@ import static org.apache.logging.log4j.util.Strings.EMPTY;
  * @since 12/14/2024
  *
  * Todo: mapping could probably use a library
+ * Todo: no hard coding credentials
  */
 
 public class UserUtils {
+
+    // Todo: Refactor out because it is in mapper now
     public static UserEntity createUserEntity(String firstName, String lastName, String email, RoleEntity role) {
         return UserEntity.builder()
                 .userId(UUID.randomUUID().toString())
@@ -53,7 +56,7 @@ public class UserUtils {
                 .build();
 
     }
-
+    // Todo: Refactor out because it is in mapper now
     public static User fromUserEntity(UserEntity userEntity, RoleEntity role, CredentialEntity credentialEntity) {
         User user = new User();
         BeanUtils.copyProperties(userEntity, user);
@@ -64,6 +67,21 @@ public class UserUtils {
         user.setRole(role.getName());
         user.setAuthorities(role.getAuthorities().getValue());
         return user;
+    }
+
+    public static UserEntity toUserEntity(User user, RoleEntity role) {
+        UserEntity userEntity = new UserEntity();
+        BeanUtils.copyProperties(user, userEntity);
+
+        // Convert String dates back to LocalDateTime
+        userEntity.setLastLogin(LocalDateTime.parse(user.getLastLogin()));
+        userEntity.setCreatedAt(LocalDateTime.parse(user.getCreatedAt()));
+        userEntity.setUpdatedAt(LocalDateTime.parse(user.getUpdateAt()));
+
+        // Set role
+        userEntity.setRole(role);
+
+        return userEntity;
     }
 
     private static boolean isCredentialNonExpired(CredentialEntity credentialEntity) {
