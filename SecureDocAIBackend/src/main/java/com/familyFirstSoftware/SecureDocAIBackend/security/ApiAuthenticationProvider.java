@@ -21,7 +21,7 @@ import java.util.function.Function;
 
 
 import static com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication.authenticated;
-import static java.time.LocalDateTime.now;
+
 
 
 /**
@@ -31,7 +31,10 @@ import static java.time.LocalDateTime.now;
  * @email FamilyFirstSoftware@gmail.com
  * @since 2/13/2025
  *
- * Todo: shouldn't be APIAuthenticationProvider. Should be AISecureAuthenticationProvider or something
+ * Todo: shouldn't be APIAuthenticationProvider. Should be AISecureAuthenticationProvider or DaoAuthenticationProvider
+ * Todo: Do OAuth Authentication Provider. Create a AISecureAuthenticationProvider interface so we can use both
+ *        We will need a AuthenticationManager (ProviderManager) for this
+ *
  */
 
 @Component

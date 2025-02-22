@@ -32,6 +32,8 @@ import static java.util.Collections.emptyMap;
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 12/14/2024
+ *
+ * This class handles user-related HTTP requests such as registration, account verification, and MFA setup.
  */
 @Slf4j
 @RestController

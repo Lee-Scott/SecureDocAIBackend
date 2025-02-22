@@ -56,6 +56,8 @@ import static org.springframework.security.core.authority.AuthorityUtils.commaSe
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 2/3/2025
+ *
+ * This class implements JWT-related functionalities such as creating tokens, extracting tokens, and adding cookies.
  */
 
 @Service
