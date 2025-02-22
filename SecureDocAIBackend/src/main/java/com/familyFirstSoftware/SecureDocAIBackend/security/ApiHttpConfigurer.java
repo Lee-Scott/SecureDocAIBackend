@@ -16,6 +16,9 @@ import org.springframework.stereotype.Component;
  * @email FamilyFirstSoftware@gmail.com
  * @since 2/18/2025
  *
+ * This class configures HTTP security by adding custom filters and authentication providers.
+ *
+ * Todo: add a AuthenticationManager and a second Authentication provider.
  *
  */
 
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ApiHttpConfigurer extends AbstractHttpConfigurer<ApiHttpConfigurer, HttpSecurity> {
     private final AuthorizationFilter authorizationFilter;
+
+    // ApiAuthenticationProvider configures the AuthenticationManager
     private final ApiAuthenticationProvider apiAuthenticationProvider;
     private final UserService userService;
     private final JwtService jwtService;

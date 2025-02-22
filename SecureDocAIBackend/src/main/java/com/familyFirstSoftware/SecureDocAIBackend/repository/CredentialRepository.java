@@ -12,6 +12,8 @@ import java.util.Optional;
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 12/14/2024
+ *
+ * This repository interface manages CredentialEntity objects, providing methods to find credentials by user entity ID
  */
 
 @Repository

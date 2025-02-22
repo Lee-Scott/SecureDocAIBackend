@@ -14,6 +14,8 @@ import org.springframework.data.jpa.repository.Query;
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 12/14/2024
+ *
+ * This interface defines the operations related to user management, such as creating a user, verifying an account, and setting up MFA.
  * DAO
  */
 public interface UserService {

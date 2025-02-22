@@ -17,6 +17,7 @@ import java.util.Collection;
  * @since 1/11/2025
  *
  * TODO: name should not be generic. Should be AISecureAuthentication or something
+ * Todo: fields should be final
  */
 
 public class ApiAuthentication extends AbstractAuthenticationToken {

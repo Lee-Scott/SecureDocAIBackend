@@ -16,6 +16,9 @@ import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.STRE
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 2/13/2025
+ *
+ * This is the main Spring Security configuration file.
+ * It configures password encoding using BCryptPasswordEncoder.
  */
 
 @Configuration

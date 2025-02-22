@@ -1,14 +1,10 @@
 package com.familyFirstSoftware.SecureDocAIBackend.security;
 
-import com.familyFirstSoftware.SecureDocAIBackend.domain.ApiAuthentication;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.LoginRequest;
-import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
-import com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType;
 import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -36,7 +32,6 @@ import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.getR
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.handleErrorResponse;
 import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
 import static java.util.Map.of;
-import static javax.swing.text.html.FormSubmitEvent.MethodType.POST;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
