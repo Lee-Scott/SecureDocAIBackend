@@ -67,7 +67,8 @@ public class UserEntity extends Auditable {
     private RoleEntity role; // ADMIN(read, update, delete) or USER(read, update) we can check for permissions or just role depending on the details needed
 
 
-
-
+    public boolean getAccountNonExpired() {
+        return this.accountNonExpired;
+    }
 }
 

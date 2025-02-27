@@ -11,6 +11,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
+import com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.ConfirmationRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.CredentialRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.RoleRepository;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
+import static com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper.fromUserEntity;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -190,6 +192,6 @@ public class UserServiceImpl implements UserService {
 
     private UserEntity createNewUser(String firstName, String lastName, String email) {
         var role = getRoleName(Authority.USER.name());
-        return createUserEntity(firstName, lastName, email, role);
+        return UserMapper.createUserEntity(firstName, lastName, email, role);
     }
 }
