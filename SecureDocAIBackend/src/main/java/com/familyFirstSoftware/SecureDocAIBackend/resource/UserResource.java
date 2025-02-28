@@ -2,7 +2,9 @@ package com.familyFirstSoftware.SecureDocAIBackend.resource;
 
 import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.EmailRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.QrCodeRequest;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.ResetPasswordRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.UserRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType;
 import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
@@ -34,6 +36,8 @@ import static java.util.Collections.emptyMap;
  * @since 12/14/2024
  *
  * This class handles user-related HTTP requests such as registration, account verification, and MFA setup.
+ *
+ *
  */
 @Slf4j
 @RestController
@@ -48,6 +52,7 @@ public class UserResource {
         userService.createUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword()); // could return newly created user
         return ResponseEntity.created(getUri()).body(getResponse(request, emptyMap(), "Account created. Check your email for verification.", HttpStatus.CREATED));
     }
+
 
     @GetMapping(path = {"/verify/account"})
     public ResponseEntity<Response> verifyAccount(@RequestParam("key") String key, HttpServletRequest request) {
@@ -77,6 +82,25 @@ public class UserResource {
         return ResponseEntity.ok(getResponse(request, Map.of("user", user), "QR Code Verified.", HttpStatus.OK));
     }
 
+    // Start - Reset password when not logged in
+    @PostMapping(path = {"/resetpassword"})
+    public ResponseEntity<Response> resetPassword(@RequestBody @Valid EmailRequest emailRequest, HttpServletRequest request) {
+        userService.resetPassword(emailRequest.getEmail());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Email sent to reset password.", HttpStatus.OK));
+    }
+
+    @GetMapping(path = {"/verify/password"})
+    public ResponseEntity<Response> verifyPassword(@RequestParam ("key") String key, HttpServletRequest request) {
+        var user = userService.verifyPasswordKey(key);
+        return ResponseEntity.ok().body(getResponse(request,    Map.of("user", user), "Enter new password", HttpStatus.OK));
+    }
+
+    @PostMapping(path = {"/resetpassword/reset"})
+    public ResponseEntity<Response> doResetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
+        userService.updatePassword(resetPasswordRequest.getUserId(), resetPasswordRequest.getNewPassword(), resetPasswordRequest.getConfirmNewPassword());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Password reset success.", HttpStatus.OK));
+    }
+    // End - Reset password when not logged in
 
     private URI getUri() {
         return URI.create("");

@@ -32,11 +32,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.PASSWORD_RESET;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
 import static com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper.fromUserEntity;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
+import static com.familyFirstSoftware.SecureDocAIBackend.validation.UserValidation.verifyAccountStatus;
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -46,6 +49,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 12/14/2024
+ *
+ * Todo:verifyPasswordKey() check for timestamp
  */
 
 @Service
@@ -160,6 +165,51 @@ public class UserServiceImpl implements UserService {
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
+    @Override
+    public void resetPassword(String email) {
+        var userEntity = getUserEntityByEmail(email);
+        var conformation = getUserConfirmation(userEntity);
+        if(conformation != null) {
+            // send existing confirmation
+            publisher.publishEvent(new UserEvent(userEntity, PASSWORD_RESET, Map.of("key", conformation.getKey())));
+
+        } else {
+            var confirmationEntity = new ConfirmationEntity(userEntity);
+            confirmationRepository.save(confirmationEntity);
+            publisher.publishEvent(new UserEvent(userEntity, PASSWORD_RESET, Map.of("key", confirmationEntity.getKey())));
+
+        }
+    }
+
+    @Override
+    public User verifyPasswordKey(String key) {
+        var confirmationEntity = getUserConfirmation(key);
+        if(confirmationEntity == null){
+            throw new ApiException("Unable to find token");
+        }
+        //var userEntity = confirmationEntity.getUserEntity(); TODO
+        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+
+        if(userEntity == null){
+            throw new ApiException("Invalid key");
+        }
+        verifyAccountStatus(userEntity);
+        confirmationRepository.delete(confirmationEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+    @Override
+    public void updatePassword(String userId, String newPassword, String confirmNewPassword) {
+        if(!Objects.equals(confirmNewPassword, newPassword)){
+            throw new ApiException("Passwords do not match. Please try again.");
+        }
+        var user = getUserByUserId(userId);
+        var credential = getUserCredentialById(user.getId());
+        credential.setPassword(encoder.encode(newPassword));
+        credentialRepository.save(credential);
+
+    }
+
     private boolean verifyCode(String qrCode, String qrCodeSecret) {
         TimeProvider timeProvider = new SystemTimeProvider();
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
@@ -188,6 +238,10 @@ public class UserServiceImpl implements UserService {
 
     private ConfirmationEntity getUserConfirmation(String key) {
         return confirmationRepository.findByKey(key).orElseThrow(() -> new ApiException("Confirmation key not found"));
+    }
+
+    private ConfirmationEntity getUserConfirmation(UserEntity user) {
+        return confirmationRepository.findByUserEntity(user).orElse(null); // because it can be we are checking for null when called
     }
 
     private UserEntity createNewUser(String firstName, String lastName, String email) {
