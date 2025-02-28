@@ -41,7 +41,7 @@ public class UserMapper {
         User user = new User();
         BeanUtils.copyProperties(userEntity, user);
         user.setLastLogin(userEntity.getLastLogin().toString());
-        user.setCreditNonExpired(userEntity.getAccountNonExpired());
+        user.setCreditNonExpired(userEntity.isAccountNonExpired());
         user.setCreatedAt(userEntity.getCreatedAt().toString());
         user.setUpdateAt(userEntity.getUpdatedAt().toString());
         user.setRole(role.getName());

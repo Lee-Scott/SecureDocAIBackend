@@ -12,6 +12,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+/**
+ * @author Lee Scott
+ * @version 1.0
+ * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
+ * @email FamilyFirstSoftware@gmail.com
+ * @since 12/14/2024
+ *
+ * Todo: exception handling refactor into its own folder and class
+ * Todo: validation on the password and reset password
+ */
 @SpringBootApplication//(exclude = SecurityAutoConfiguration.class)
 @EnableJpaAuditing // for the event listener (@EntityListeners) on Auditable witch is extended by all entities
 @EnableAsync

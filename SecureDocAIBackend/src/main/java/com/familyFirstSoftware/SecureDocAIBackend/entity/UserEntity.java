@@ -43,6 +43,7 @@ public class UserEntity extends Auditable {
     private String imageUrl;
     private Integer loginAttempts;
     private LocalDateTime lastLogin;
+    @Getter
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean enabled;
@@ -67,8 +68,5 @@ public class UserEntity extends Auditable {
     private RoleEntity role; // ADMIN(read, update, delete) or USER(read, update) we can check for permissions or just role depending on the details needed
 
 
-    public boolean getAccountNonExpired() {
-        return this.accountNonExpired;
-    }
 }
 

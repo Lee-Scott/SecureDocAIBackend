@@ -29,5 +29,12 @@ public interface UserService {
     User setUpMfa(Long id);
     User cancelMfa(Long id);
     User verifyQrCode(String userId, String qrCode);
+
+    void resetPassword(String email);
+
+    User verifyPasswordKey(String key);
+
+    void updatePassword(String userId, String newPassword, String confirmNewPassword);
+
 }
 
