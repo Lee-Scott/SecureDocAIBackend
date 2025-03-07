@@ -60,6 +60,12 @@ public class UserResource {
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account verified.", HttpStatus.OK));
     }
 
+    @GetMapping(path = {"/profile"})
+    public ResponseEntity<Response> profile(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
+        var user = userService.getUserByUserId(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "Profile retrieved.", HttpStatus.OK));
+    }
+
     // @AuthenticationPrincipal User needs to be authenticated to access this route
     @PatchMapping (path = {"/mfa/setup"})
     public ResponseEntity<Response> setupMfa(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
