@@ -1,12 +1,14 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.UserRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author Lee Scott
@@ -29,12 +31,17 @@ public interface UserService {
     User setUpMfa(Long id);
     User cancelMfa(Long id);
     User verifyQrCode(String userId, String qrCode);
-
     void resetPassword(String email);
-
     User verifyPasswordKey(String key);
-
     void updatePassword(String userId, String newPassword, String confirmNewPassword);
-
+    void updatePassword(String userId, String oldPassword, String newPassword, String confirmNewPassword);
+    User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio);
+    void updateRole(String userId, String role);
+    void toggleAccountExpired(String userId);
+    void toggleAccountLocked(String userId);
+    void toggleAccountEnabled(String userId);
+    void toggleCredentialsExpired(String userId);
+    void makeCredentialsExpired(String userId);
+    String uploadPhoto(String userId, MultipartFile file);
 }
 

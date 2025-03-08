@@ -29,17 +29,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.NINETY_DAYS;
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.PHOTO_DIRECTORY;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.PASSWORD_RESET;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
 import static com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper.fromUserEntity;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.validation.UserValidation.verifyAccountStatus;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -58,6 +68,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CredentialRepository credentialRepository;
@@ -209,6 +220,110 @@ public class UserServiceImpl implements UserService {
         credentialRepository.save(credential);
 
     }
+
+    @Override
+    public void updatePassword(String userId, String oldPassword, String newPassword, String confirmNewPassword) {
+        if(!Objects.equals(confirmNewPassword, newPassword)){
+            throw new ApiException("Passwords do not match. Please try again.");
+        }
+        var user = getUserEntityByUserId(userId);
+        verifyAccountStatus(user);
+        var credential = getUserCredentialById(user.getId());
+        if(!encoder.matches(oldPassword, credential.getPassword())) { // validate they are who they say they are
+            throw new ApiException("Existing Passwords is incorrect. Please try again.");
+        }
+        credential.setPassword(encoder.encode(newPassword));
+        credentialRepository.save(credential);
+    }
+
+    @Override
+    public User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        userEntity.setFirstName(firstName);
+        userEntity.setLastName(lastName);
+        userEntity.setEmail(email);
+        userEntity.setPhone(phone);
+        userEntity.setBio(bio);
+        userRepository.save(userEntity);
+        return UserMapper.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+    @Override
+    public void updateRole(String userId, String role) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        userEntity.setRole(getRoleName(role));
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public void toggleAccountExpired(String userId) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        userEntity.setAccountNonExpired(!userEntity.isAccountNonExpired());
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public void toggleAccountLocked(String userId) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        userEntity.setAccountNonLocked(!userEntity.isAccountNonLocked());
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public void toggleAccountEnabled(String userId) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        userEntity.setEnabled(!userEntity.isEnabled());
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public void toggleCredentialsExpired(String userId) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        var credential = getUserCredentialById(userEntity.getId());
+
+        if (credential.getUpdatedAt().plusDays(NINETY_DAYS).isAfter(LocalDateTime.now())) {
+            credential.setUpdatedAt(LocalDateTime.now());
+        } else {
+            credential.setUpdatedAt(LocalDateTime.from(Instant.EPOCH));   // jan 1 1970, any day older than 90 days will work
+        }
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public void makeCredentialsExpired(String userId) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        var credential = getUserCredentialById(userEntity.getId());
+        credential.setUpdatedAt(LocalDateTime.from(Instant.EPOCH));   // jan 1 1970, any day older than 90 days will work
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public String uploadPhoto(String userId, MultipartFile file) {
+        var user = getUserEntityByUserId(userId);
+        var photoUrl = photoFunction.apply(userId, file);
+        user.setImageUrl(photoUrl + "?timestamp=" + System.currentTimeMillis());
+        userRepository.save(user); // frontend will have <ima src={user.getImageUrl()}> browser will not fetch the img if the url is the same. so we pass in the timestamp
+        return photoUrl;
+    }
+    private final BiFunction<String, MultipartFile, String> photoFunction = (userId, file) -> {
+        //Todo: create a new UUID here shouldn't be leaking the userId
+        var fileName = userId + ".png";
+        try {
+            // Todo: save in a AWS s3 bucket or anther storage service (Google Drive?) and return a url. Then save that url to the user
+            var fileStoreLocation = Paths.get(PHOTO_DIRECTORY).toAbsolutePath().normalize();
+            if(!Files.exists(fileStoreLocation)){
+                Files.createDirectories(fileStoreLocation);
+            }
+            Files.copy(file.getInputStream(), fileStoreLocation.resolve(fileName), REPLACE_EXISTING);
+            return ServletUriComponentsBuilder
+                    .fromCurrentContextPath()
+                    .path("/user/image/" + fileName).toUriString();
+
+        } catch (Exception e) {
+            throw new ApiException("Unable to save image");
+
+        }
+    };
 
     private boolean verifyCode(String qrCode, String qrCodeSecret) {
         TimeProvider timeProvider = new SystemTimeProvider();

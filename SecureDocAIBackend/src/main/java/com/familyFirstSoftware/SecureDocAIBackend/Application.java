@@ -21,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  *
  * Todo: exception handling refactor into its own folder and class
  * Todo: validation on the password and reset password
+ * Todo: create SUPER_ADMIN and MANAGER roles bellow or manually in the database
  */
 @SpringBootApplication//(exclude = SecurityAutoConfiguration.class)
 @EnableJpaAuditing // for the event listener (@EntityListeners) on Auditable witch is extended by all entities
