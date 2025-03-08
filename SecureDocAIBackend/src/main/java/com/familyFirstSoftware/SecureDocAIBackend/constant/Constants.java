@@ -11,6 +11,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.constant;
  */
 
 public class Constants {
+    public static final String PHOTO_DIRECTORY = System.getProperty("user.home") + "/downloads/uploads/";
     public static final String[] PUBLIC_URLS = { "/user/resetpassword/reset/**", "/user/verify/resetpassword/**", "/user/resetpassword/**", "/user/verify/qrcode/**", "/user/login/**", "/user/verify/account/**", "/user/register/**", "/user/new/password/**", "/user/verify/**", "/user/resetpassword/**", "/user/image/**", "/user/verify/password/**" };
     public static final int NINETY_DAYS = 90;
     public static final int STRENGTH = 12;
