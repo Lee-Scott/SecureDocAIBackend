@@ -32,18 +32,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
-import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.NINETY_DAYS;
-import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.PHOTO_DIRECTORY;
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.PASSWORD_RESET;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
 import static com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper.fromUserEntity;
@@ -51,6 +49,7 @@ import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.validation.UserValidation.verifyAccountStatus;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.time.LocalDateTime.now;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
@@ -68,6 +67,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
+
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -297,6 +297,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
     }
 
+    public List<User> getUsers(){
+        return userRepository.findAll()
+                .stream()
+                .filter(userEntity -> !SYSTEM_GMAIL.equalsIgnoreCase(userEntity.getEmail()))
+                .map(userEntity -> fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId())))
+                .collect(toList());
+    }
+
     @Override
     public String uploadPhoto(String userId, MultipartFile file) {
         var user = getUserEntityByUserId(userId);
@@ -305,12 +313,19 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user); // frontend will have <ima src={user.getImageUrl()}> browser will not fetch the img if the url is the same. so we pass in the timestamp
         return photoUrl;
     }
+
+    @Override
+    public User getUserById(Long id) {
+        var userEntity = userRepository.findById(id).orElseThrow(() -> new ApiException("User not found"));
+        return null;
+    }
+
     private final BiFunction<String, MultipartFile, String> photoFunction = (userId, file) -> {
         //Todo: create a new UUID here shouldn't be leaking the userId
         var fileName = userId + ".png";
         try {
             // Todo: save in a AWS s3 bucket or anther storage service (Google Drive?) and return a url. Then save that url to the user
-            var fileStoreLocation = Paths.get(PHOTO_DIRECTORY).toAbsolutePath().normalize();
+            var fileStoreLocation = Paths.get(FILE_STORAGE).toAbsolutePath().normalize();
             if(!Files.exists(fileStoreLocation)){
                 Files.createDirectories(fileStoreLocation);
             }
