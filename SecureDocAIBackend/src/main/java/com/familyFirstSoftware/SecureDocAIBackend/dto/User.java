@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
  * @since 1/11/2025
+ *
+ * what we are returning to the frontend
  */
 
 @Data

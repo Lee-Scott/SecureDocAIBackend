@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 
-
-import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.PHOTO_DIRECTORY;
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.FILE_STORAGE;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.getResponse;
 import static java.util.Collections.emptyMap;
 
@@ -170,7 +168,7 @@ public class UserResource {
     // when not json, you have to explicitly set the media type with produces
     @GetMapping(path = {"/image/{filename}"}, produces = { MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE })
     public byte[] getPhoto(@PathVariable("filename") String filename) throws IOException {
-        String filePath = PHOTO_DIRECTORY + filename;
+        String filePath = FILE_STORAGE + filename;
         log.info("Retrieving image from {}", filePath);
         return Files.readAllBytes(Paths.get(filePath));
     }
