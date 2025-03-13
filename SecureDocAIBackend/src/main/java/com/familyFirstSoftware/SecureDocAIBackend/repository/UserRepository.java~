@@ -1,0 +1,26 @@
+package com.familyFirstSoftware.SecureDocAIBackend.repository;
+
+import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntityOLD;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+/**
+ * @author Lee Scott
+ * @version 1.0
+ * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
+ * @email FamilyFirstSoftware@gmail.com
+ * @since 12/14/2024
+ *
+ * This repository interface manages UserEntity objects, providing methods to find users by email or user ID.
+ */
+
+@Repository
+public interface UserRepository extends JpaRepository<UserEntityOLD, Long> {
+    Optional<UserEntityOLD> findUserByEmailIgnoreCase(String username);
+
+
+    Optional<UserEntityOLD> findUserByUserId(String id);
+}
+
