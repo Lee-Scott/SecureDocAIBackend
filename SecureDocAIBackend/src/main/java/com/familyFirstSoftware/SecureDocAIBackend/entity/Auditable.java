@@ -1,10 +1,18 @@
 package com.familyFirstSoftware.SecureDocAIBackend.entity;
 
-
 import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,12 +24,14 @@ import java.time.LocalDateTime;
 
 import static java.time.LocalDateTime.now;
 
-/*
-    This will never be persisted to the DB, the child classes will.
-    Provides a foundation for entities that require auditing information,
-    making it easier to track changes and updates to data in the application
-    called entity because they are persisted in the DB and JPA calls them entities
+/**
+ * @author Junior RT
+ * @version 1.0
+ * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
+ * @email getarrayz@gmail.com
+ * @since 1/23/24
  */
+
 @Getter
 @Setter
 @MappedSuperclass
@@ -49,8 +59,8 @@ public abstract class Auditable {
 
     @PrePersist
     public void beforePersist() {
-        var userId = 0L;//RequestContext.getUserId();
-        //if(userId == null) { throw new ApiException("Cannot persist entity without user ID in Request Context for this thread"); }
+        var userId = RequestContext.getUserId();
+        if(userId == null) { throw new ApiException("Cannot persist entity without user ID in Request Context for this thread"); }
         setCreatedAt(now());
         setCreatedBy(userId);
         setUpdatedBy(userId);
@@ -59,8 +69,8 @@ public abstract class Auditable {
 
     @PreUpdate
     public void beforeUpdate() {
-        var userId = 0L ; //RequestContext.getUserId();
-        //if(userId == null) { throw new ApiException("Cannot update entity without user ID in Request Context for this thread"); }
+        var userId = RequestContext.getUserId();
+        if(userId == null) { throw new ApiException("Cannot update entity without user ID in Request Context for this thread"); }
         setUpdatedAt(now());
         setUpdatedBy(userId);
     }

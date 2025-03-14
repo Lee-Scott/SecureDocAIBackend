@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.FILE_STORAGE;
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.DocumentUtils.fromDocumentEntity;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.DocumentUtils.getDocumentUri;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static javax.swing.text.StyleConstants.setIcon;
@@ -87,7 +88,7 @@ public class DocumentServiceImpl implements DocumentService {
         }catch (Exception e){
             throw new ApiException("Unable to save documents");
         }
-        return null;
+
     }
 
 

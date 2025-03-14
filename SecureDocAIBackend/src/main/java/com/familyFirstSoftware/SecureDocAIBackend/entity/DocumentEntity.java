@@ -1,32 +1,43 @@
 package com.familyFirstSoftware.SecureDocAIBackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 /**
- * @author Lee Scott
+ * @author Junior RT
  * @version 1.0
- * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
- * @email FamilyFirstSoftware@gmail.com
- * @since 3/11/2025
+ * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
+ * @email getarrayz@gmail.com
+ * @since 4/8/24
  */
 
 @Getter
 @Setter
-@Builder
 @ToString
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "documents")
 @JsonInclude(NON_DEFAULT)
-public class DocumentEntity extends Auditable{
-
+public class DocumentEntity extends Auditable {
     @Column(updatable = false, unique = true, nullable = false)
-    private String documentId; // Not the primary key that's in Auditable. String vs long as well
+    private String documentId;
     private String name;
     private String description;
     private String uri;
@@ -34,14 +45,11 @@ public class DocumentEntity extends Auditable{
     private String formattedSize;
     private String icon;
     private String extension;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "user_id",
             referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_document_owner", foreignKeyDefinition = "foreign key /* FK */(user_id) references UserEntity", value = ConstraintMode.NO_CONSTRAINT)
+            foreignKey = @ForeignKey(name = "fk_documents_owner", foreignKeyDefinition = "foreign key /* FK */ (user_id) references UserEntity", value = ConstraintMode.CONSTRAINT)
     )
     private UserEntity owner;
-
 }
-

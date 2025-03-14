@@ -33,24 +33,32 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Bean
+	/*@Bean
 	CommandLineRunner commandLineRunner(RoleRepository roleRepository) {
 		return args -> {
+			System.out.println(">>> Running CommandLineRunner...");
+
+			// Set user context
 			RequestContext.setUserId(0L);
-			// we cannot do this more than once
-			/*RequestContext.setUserId(0L);
+
+			// Create and save roles
 			var userRole = new RoleEntity();
 			userRole.setName(Authority.USER.name());
 			userRole.setAuthorities(Authority.USER);
+			System.out.println("Saving role: " + userRole.getName());
 
 			var adminRole = new RoleEntity();
 			adminRole.setName(Authority.ADMIN.name());
 			adminRole.setAuthorities(Authority.ADMIN);
+			System.out.println("Saving role: " + adminRole.getName());
 
 			roleRepository.save(userRole);
-			RequestContext.start();*/
-		};
+			roleRepository.save(adminRole);
 
-	}
+			System.out.println(">>> Finished CommandLineRunner.");
+
+			RequestContext.start();
+		};
+	}*/
 
 }
