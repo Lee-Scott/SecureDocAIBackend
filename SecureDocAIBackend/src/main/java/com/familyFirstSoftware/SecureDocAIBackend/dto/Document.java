@@ -1,26 +1,34 @@
 package com.familyFirstSoftware.SecureDocAIBackend.dto;
 
-import lombok.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 /**
- * @author Lee Scott
+ * @author Junior RT
  * @version 1.0
- * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
- * @email FamilyFirstSoftware@gmail.com
- * @since 3/12/2025
- *
- * what we are returning to the frontend
+ * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
+ * @email getarrayz@gmail.com
+ * @since 4/8/24
  */
+
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Document {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String documentId; // Not the primary key that's in Auditable. String vs long as well
+    private String documentId;
     private String name;
     private String description;
     private String uri;
@@ -28,7 +36,6 @@ public class Document {
     private String formattedSize;
     private String icon;
     private String extension;
-    // returned in join
     private String referenceId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -37,6 +44,4 @@ public class Document {
     private String ownerPhone;
     private String ownerLastLogin;
     private String updaterName;
-
 }
-

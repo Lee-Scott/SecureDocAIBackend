@@ -1,49 +1,75 @@
 package com.familyFirstSoftware.SecureDocAIBackend.entity;
 
-import com.fasterxml.jackson.annotation.*;
-import jakarta.persistence.*;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
+import static jakarta.persistence.FetchType.EAGER;
 
 /**
- * @author Lee Scott
+ * @author Junior RT
  * @version 1.0
- * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
- * @email FamilyFirstSoftware@gmail.com
- * @since 12/9/2024
- *
- * Table with UserId and their passwords. When a record is deleted, it will cascade to the UserEntity / users table
+ * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
+ * @email getarrayz@gmail.com
+ * @since 1/25/24
  */
 
 @Getter
 @Setter
-@Builder
 @ToString
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "credentials")
 @JsonInclude(NON_DEFAULT)
 public class CredentialEntity extends Auditable {
-
-    @Getter
     private String password;
-
-    @OneToOne(targetEntity = UserEntity.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false) // name o column in db
+    @OneToOne(targetEntity = UserEntity.class, fetch = EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id") // the property we are using to identify what the "user_id" will be
-    @JsonIdentityReference(alwaysAsId = true) // always makes sure it's a valid id reference and nothing else
-    @JsonProperty("user_id") // jackson. this is what the key will be
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
+    @JsonProperty("user_id")
     private UserEntity userEntity;
 
     public CredentialEntity(UserEntity userEntity, String password) {
         this.userEntity = userEntity;
         this.password = password;
     }
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

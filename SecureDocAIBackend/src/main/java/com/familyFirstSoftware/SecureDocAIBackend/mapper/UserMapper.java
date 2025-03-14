@@ -29,7 +29,7 @@ public class UserMapper {
         // Convert String dates back to LocalDateTime
         userEntity.setLastLogin(LocalDateTime.parse(user.getLastLogin()));
         userEntity.setCreatedAt(LocalDateTime.parse(user.getCreatedAt()));
-        userEntity.setUpdatedAt(LocalDateTime.parse(user.getUpdateAt()));
+        userEntity.setUpdatedAt(LocalDateTime.parse(user.getUpdatedAt()));
 
         // Set role
         userEntity.setRole(role);
@@ -41,9 +41,9 @@ public class UserMapper {
         User user = new User();
         BeanUtils.copyProperties(userEntity, user);
         user.setLastLogin(userEntity.getLastLogin().toString());
-        user.setCreditNonExpired(userEntity.isAccountNonExpired());
+        user.setCredentialsNonExpired(userEntity.isAccountNonExpired());
         user.setCreatedAt(userEntity.getCreatedAt().toString());
-        user.setUpdateAt(userEntity.getUpdatedAt().toString());
+        user.setUpdatedAt(userEntity.getUpdatedAt().toString());
         user.setRole(role.getName());
         user.setAuthorities(role.getAuthorities().getValue());
         return user;

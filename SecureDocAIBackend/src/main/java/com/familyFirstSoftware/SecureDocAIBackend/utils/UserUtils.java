@@ -44,7 +44,7 @@ public class UserUtils {
         // Convert String dates back to LocalDateTime
         userEntity.setLastLogin(LocalDateTime.parse(user.getLastLogin()));
         userEntity.setCreatedAt(LocalDateTime.parse(user.getCreatedAt()));
-        userEntity.setUpdatedAt(LocalDateTime.parse(user.getUpdateAt()));
+        userEntity.setUpdatedAt(LocalDateTime.parse(user.getUpdatedAt()));
 
         // Set role
         userEntity.setRole(role);

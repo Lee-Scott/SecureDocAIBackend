@@ -5,15 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 /**
- * @author Lee Scott
+ * @author Junior RT
  * @version 1.0
- * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
- * @email FamilyFirstSoftware@gmail.com
- * @since 3/12/
- *
- * This has to be an interface and its specifications are around the SELECT_DOCUMENTS_QUERY.
- * We have to give a getter and setter for every column so JPA can do the mapping and give us a Pageable in DocumentRepository.
- * JPA will not be able to do tha mapping if you don't follow this syntax.
+ * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
+ * @email getarrayz@gmail.com
+ * @since 4/8/24
  */
 
 public interface IDocument {
@@ -33,7 +29,7 @@ public interface IDocument {
     long getSize();
     void setSize(long size);
     @JsonProperty("formattedSize")
-    String getFormatted_Size(); // very important to use the '_' for SQL syntax
+    String getFormatted_Size();
     void setFormatted_Size(String formattedSize);
     String getExtension();
     void setExtension(String extension);
@@ -61,6 +57,4 @@ public interface IDocument {
     @JsonProperty("updaterName")
     String getUpdater_Name();
     void setUpdater_Name(String updaterName);
-
 }
-
