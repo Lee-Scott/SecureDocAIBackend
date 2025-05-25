@@ -8,17 +8,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-/**
- * @author Lee Scott
- * @version 1.0
- * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
- * @email FamilyFirstSoftware@gmail.com
- * @since 3/12/2025
- */
 
 public class DocumentUtils {
 
-    public static Document fromDocumentEntity(DocumentEntity documentEntity, User createdBy, User updatedBy) {
+    /*public static Document fromDocumentEntity(DocumentEntity documentEntity, User createdBy, User updatedBy) {
         var document = new Document();
         BeanUtils.copyProperties(documentEntity, document);
         document.setOwnerName(createdBy.getFirstName() + " " + createdBy.getLastName());
@@ -27,7 +20,35 @@ public class DocumentUtils {
         document.setOwnerLastLogin(createdBy.getLastLogin());
         document.setUpdaterName(updatedBy.getFirstName() + " " + updatedBy.getLastName());
         return document;
+    }*/
+
+    public static Document fromDocumentEntity(DocumentEntity documentEntity, User createdBy, User updatedBy) {
+    Document document = new Document();
+    BeanUtils.copyProperties(documentEntity, document);
+
+    if (createdBy != null) {
+        document.setOwnerName(createdBy.getFirstName() + " " + createdBy.getLastName());
+        document.setOwnerEmail(createdBy.getEmail());
+        document.setOwnerPhone(createdBy.getPhone());
+        document.setOwnerLastLogin(createdBy.getLastLogin());
+    } else {
+        // Set default values or log a warning if createdBy is null
+        document.setOwnerName("Unknown");
+        document.setOwnerEmail("Unknown");
+        document.setOwnerPhone("Unknown");
+        document.setOwnerLastLogin(null);
     }
+
+    if (updatedBy != null) {
+        document.setUpdaterName(updatedBy.getFirstName() + " " + updatedBy.getLastName());
+    } else {
+        // Set a default updater name or log a warning if updatedBy is null
+        document.setUpdaterName("Unknown");
+    }
+
+    return document;
+}
+
 
     public static String getDocumentUri(String filename) {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path(String.format("/documents/%s", filename)).toUriString();
@@ -48,4 +69,3 @@ public class DocumentUtils {
         }
     }
 }
-

@@ -21,13 +21,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 import static jakarta.persistence.FetchType.EAGER;
 
-/**
- * @author Junior RT
- * @version 1.0
- * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
- * @email getarrayz@gmail.com
- * @since 1/25/24
- */
+
 
 @Getter
 @Setter

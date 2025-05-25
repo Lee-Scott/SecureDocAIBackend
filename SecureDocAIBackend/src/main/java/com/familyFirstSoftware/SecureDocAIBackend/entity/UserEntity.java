@@ -20,13 +20,6 @@ import java.time.LocalDateTime;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 import static jakarta.persistence.FetchType.EAGER;
 
-/**
- * @author Junior RT
- * @version 1.0
- * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
- * @email getarrayz@gmail.com
- * @since 1/25/24
- */
 
 @Getter
 @Setter
@@ -49,7 +42,9 @@ public class UserEntity extends Auditable {
     private String phone;
     private String bio;
     private String imageUrl;
+    @Column(name = "account_non_expired")
     private boolean accountNonExpired;
+    @Column(name = "account_non_locked")
     private boolean accountNonLocked;
     private boolean enabled;
     private boolean mfa;

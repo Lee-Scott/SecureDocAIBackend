@@ -8,28 +8,35 @@ import com.familyFirstSoftware.SecureDocAIBackend.repository.DocumentRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.UserRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.service.DocumentService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
-import com.familyFirstSoftware.SecureDocAIBackend.utils.DocumentUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.FILE_STORAGE;
-import static com.familyFirstSoftware.SecureDocAIBackend.utils.DocumentUtils.fromDocumentEntity;
-import static com.familyFirstSoftware.SecureDocAIBackend.utils.DocumentUtils.getDocumentUri;
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.DocumentUtils.*;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static javax.swing.text.StyleConstants.setIcon;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FilenameUtils.getExtension;
+import static org.springframework.data.domain.PageRequest.of;
 import static org.springframework.util.StringUtils.cleanPath;
 
 /**
@@ -37,9 +44,10 @@ import static org.springframework.util.StringUtils.cleanPath;
  * @version 1.0
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
- * @since 3/12/2025
+ * @since 4/14/2025
  */
 
+@Slf4j
 @Service
 @Transactional(rollbackOn = Exception.class)
 @RequiredArgsConstructor
@@ -47,55 +55,91 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(DocumentServiceImpl.class);
+
 
     @Override
     public Page<IDocument> getDocuments(int page, int size) {
-        return documentRepository.findDocuments(PageRequest.of(page, size, Sort.by("name"))); // Can sort by any field
+        return documentRepository.findDocuments(of(page, size, Sort.by("name")));
     }
 
     @Override
     public Page<IDocument> getDocuments(int page, int size, String name) {
-        return null;
+        return documentRepository.findDocumentsByName(name, PageRequest.of(page, size, Sort.by("name")));
     }
 
     @Override
-    public Collection<Document> saveDocument(String userId, List<MultipartFile> documents) {
+    public Collection<Document> saveDocuments(String userId, List<MultipartFile> documents) {
         List<Document> newDocuments = new ArrayList<>();
         var userEntity = userRepository.findUserByUserId(userId).get();
         var storage = Paths.get(FILE_STORAGE).toAbsolutePath().normalize();
         try {
-            for(MultipartFile document : documents){
-                var fileName = cleanPath(Objects.requireNonNull(document.getOriginalFilename()));
-                if("..".contains(fileName)){ // Todo: use a library for this
-                    throw new ApiException(String.format("Invalid file name %s", fileName));
-                }
+            for(MultipartFile document : documents) {
+                var filename = cleanPath(Objects.requireNonNull(document.getOriginalFilename()));
+                if("..".contains(filename)) { throw new ApiException(String.format("Invalid file name: %s", filename)); }
                 var documentEntity = DocumentEntity
                         .builder()
                         .documentId(UUID.randomUUID().toString())
-                        .name(fileName)
+                        .name(filename)
                         .owner(userEntity)
-                        .extension(getExtension(fileName))
-                        .uri(getDocumentUri(fileName))
+                        .extension(getExtension(filename))
+                        .uri(getDocumentUri(filename))
                         .formattedSize(byteCountToDisplaySize(document.getSize()))
-                        .icon(DocumentUtils.setIcon(getExtension(fileName)))
+                        .icon(setIcon((getExtension(filename))))
                         .build();
                 var savedDocument = documentRepository.save(documentEntity);
-                Files.copy(document.getInputStream(), storage.resolve(fileName), REPLACE_EXISTING); //Todo call google drive here or amazon s3
+                Files.copy(document.getInputStream(), storage.resolve(filename), REPLACE_EXISTING);
                 Document newDocument = fromDocumentEntity(savedDocument, userService.getUserById(savedDocument.getCreatedBy()), userService.getUserById(savedDocument.getUpdatedBy()));
                 newDocuments.add(newDocument);
             }
             return newDocuments;
-        }catch (Exception e){
+        } catch (Exception exception) {
             throw new ApiException("Unable to save documents");
         }
-
     }
-
 
 
     @Override
     public IDocument updateDocument(String documentId, String name, String description) {
-        return null;
+        try {
+            var documentEntity = getDocumentEntity(documentId);
+            var document = Paths.get(FILE_STORAGE).resolve(documentEntity.getName()).toAbsolutePath().normalize();
+            // TODO: Not renaming the file in the filesystem.
+            Files.move(document, document.resolveSibling(name), REPLACE_EXISTING); // Renames fiscal file to the name of the file in the DB.
+            documentEntity.setName(name);
+            documentEntity.setDescription(description);
+            documentRepository.save(documentEntity);
+            return getDocumentByDocumentId(documentId);
+        } catch (Exception exception) {
+            throw new ApiException("Unable to update document");
+        }
+    }
+
+    // To not update the file name in the database here, it's done in the saveDocuments method'
+    /*@Override
+    public IDocument updateDocument(String documentId, String name, String description) {
+        try {
+            var documentEntity = getDocumentEntity(documentId);
+
+            // Update the document name and description in the database
+            documentEntity.setName(name);
+            documentEntity.setDescription(description);
+
+            // Update the URI to reflect the new name
+            documentEntity.setUri(getDocumentUri(name));
+
+            // Save the updated document entity
+            DocumentEntity updatedDocument = documentRepository.save(documentEntity);
+
+            // Return the updated document
+            return getDocumentByDocumentId(documentId);
+        } catch (Exception exception) {
+            throw new ApiException("Unable to update document");
+        }
+    }*/
+
+    private DocumentEntity getDocumentEntity(String documentId) {
+        return documentRepository.findByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
     }
 
     @Override
@@ -105,12 +149,17 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public IDocument getDocumentByDocumentId(String documentId) {
-        return null;
+        return documentRepository.findDocumentByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
     }
 
     @Override
     public Resource getResource(String documentName) {
-        return null;
+        try {
+            var filePath = Paths.get(FILE_STORAGE).toAbsolutePath().normalize().resolve(documentName);
+            if(!Files.exists(filePath)) { throw new ApiException("Document not found"); }
+            return new UrlResource(filePath.toUri());
+        } catch (Exception exception) {
+            throw new ApiException("Unable to download document");
+        }
     }
 }
-

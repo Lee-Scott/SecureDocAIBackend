@@ -58,7 +58,7 @@ public class UserResource {
     }
 
 
-    @GetMapping(path = {"/verify/account"})
+    @GetMapping(path = {"/verify"})
     public ResponseEntity<Response> verifyAccount(@RequestParam("key") String key, HttpServletRequest request) {
         userService.verifyAccountKey(key);
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account verified.", HttpStatus.OK));
