@@ -1,5 +1,7 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service;
 
+
+
 import com.familyFirstSoftware.SecureDocAIBackend.dto.Document;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
 import org.springframework.core.io.Resource;
@@ -14,18 +16,15 @@ import java.util.List;
  * @version 1.0
  * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
  * @email FamilyFirstSoftware@gmail.com
- * @since 3/12/2025
- *
- * Todo: add more functionality
+ * @since 3/19/2025
  */
+
 public interface DocumentService {
     Page<IDocument> getDocuments(int page, int size);
     Page<IDocument> getDocuments(int page, int size, String name);
-    Collection<Document> saveDocument(String userId, List<MultipartFile> documents);
+    Collection<Document> saveDocuments(String userId, List<MultipartFile> documents);
     IDocument updateDocument(String documentId, String name, String description);
     void deleteDocument(String documentId);
     IDocument getDocumentByDocumentId(String documentId);
     Resource getResource(String documentName);
-
-
 }

@@ -1,23 +1,14 @@
 package com.familyFirstSoftware.SecureDocAIBackend.dto;
 
 
+import lombok.*;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-
-/**
- * @author Junior RT
- * @version 1.0
- * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
- * @email getarrayz@gmail.com
- * @since 2/28/24
- */
-
-@Data
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class User {
     private Long id;
     private Long createdBy;
@@ -40,6 +31,4 @@ public class User {
     private boolean credentialsNonExpired;
     private boolean enabled;
     private boolean mfa;
-
-
 }

@@ -3,10 +3,10 @@ version: '3.8'  # Add the version of your Docker Compose
 services:
   postgresdb:
     container_name: postgrescontainer
-    image: postgres:17.2
+    image: dpage/postgres:latest #17.2
     restart: always # if the computer restarts, restart the container
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-lee}  # lee is default value if POSTGRES_USER is not set
+      POSTGRES_USER: ${POSTGRES_USER}  # lee is default value if POSTGRES_USER is not set
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     expose:

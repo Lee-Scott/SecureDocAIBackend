@@ -5,12 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 /**
- * @author Junior RT
+ * @author Lee Scott
  * @version 1.0
- * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
- * @email getarrayz@gmail.com
- * @since 4/8/24
+ * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
+ * @email FamilyFirstSoftware@gmail.com
+ * @since 12/12/2024
+ *
  */
+
+
 
 public interface IDocument {
     Long getId();

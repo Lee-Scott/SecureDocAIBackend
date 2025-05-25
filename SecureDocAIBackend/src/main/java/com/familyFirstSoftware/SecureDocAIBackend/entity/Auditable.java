@@ -24,13 +24,7 @@ import java.time.LocalDateTime;
 
 import static java.time.LocalDateTime.now;
 
-/**
- * @author Junior RT
- * @version 1.0
- * @license Get Arrays, LLC (<a href="https://www.getarrays.io">Get Arrays, LLC</a>)
- * @email getarrayz@gmail.com
- * @since 1/23/24
- */
+
 
 @Getter
 @Setter
