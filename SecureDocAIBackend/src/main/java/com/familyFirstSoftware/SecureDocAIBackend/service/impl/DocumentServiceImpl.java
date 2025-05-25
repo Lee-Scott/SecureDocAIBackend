@@ -115,29 +115,6 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
-    // To not update the file name in the database here, it's done in the saveDocuments method'
-    /*@Override
-    public IDocument updateDocument(String documentId, String name, String description) {
-        try {
-            var documentEntity = getDocumentEntity(documentId);
-
-            // Update the document name and description in the database
-            documentEntity.setName(name);
-            documentEntity.setDescription(description);
-
-            // Update the URI to reflect the new name
-            documentEntity.setUri(getDocumentUri(name));
-
-            // Save the updated document entity
-            DocumentEntity updatedDocument = documentRepository.save(documentEntity);
-
-            // Return the updated document
-            return getDocumentByDocumentId(documentId);
-        } catch (Exception exception) {
-            throw new ApiException("Unable to update document");
-        }
-    }*/
-
     private DocumentEntity getDocumentEntity(String documentId) {
         return documentRepository.findByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
     }

@@ -6,9 +6,10 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.Query;
+
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * @author Lee Scott
@@ -44,5 +45,6 @@ public interface UserService {
     void makeCredentialsExpired(String userId);
     String uploadPhoto(String userId, MultipartFile file);
     User getUserById(Long id);
+    List<User> getUsers();
 }
 

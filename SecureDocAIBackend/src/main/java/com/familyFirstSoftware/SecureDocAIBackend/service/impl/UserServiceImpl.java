@@ -68,7 +68,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CredentialRepository credentialRepository;
