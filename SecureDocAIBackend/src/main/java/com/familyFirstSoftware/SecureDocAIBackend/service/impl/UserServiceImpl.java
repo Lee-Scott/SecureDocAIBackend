@@ -7,7 +7,6 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
-import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
@@ -39,13 +38,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.BiFunction;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.PASSWORD_RESET;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
 import static com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper.fromUserEntity;
-import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.qrCodeImageUri;
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.qrCodeSecret;
 import static com.familyFirstSoftware.SecureDocAIBackend.validation.UserValidation.verifyAccountStatus;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.time.LocalDateTime.now;
@@ -76,7 +77,7 @@ public class UserServiceImpl implements UserService {
     private final CacheStore<String, Integer> userCache;
     private final ApplicationEventPublisher publisher;
 
-    @Override
+    /*@Override
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email));
         var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password));
@@ -84,6 +85,66 @@ public class UserServiceImpl implements UserService {
         var confirmationEntity = new ConfirmationEntity(userEntity);
         confirmationRepository.save(confirmationEntity);
         publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
+    }*/
+    @Override
+    public void createUser(String firstName, String lastName, String email, String password) {
+        try {
+            log.info("Creating new user: {} {}", firstName, lastName);
+            var userEntity = new UserEntity();
+            userEntity.setFirstName(firstName);
+            userEntity.setLastName(lastName);
+            userEntity.setEmail(email);
+            userEntity.setUserId(UUID.randomUUID().toString());
+
+            log.info("Getting role for new user");
+            RoleEntity roleEntity = roleRepository.findByNameIgnoreCase("USER")
+                    .orElseThrow(() -> new ApiException("Role not found"));
+            userEntity.setRole(roleEntity);
+
+            log.info("Saving user entity");
+            userEntity = userRepository.save(userEntity);
+
+            log.info("Creating credential entity");
+            var credentialEntity = new CredentialEntity();
+            credentialEntity.setUserEntity(userEntity);
+            credentialEntity.setPassword(encoder.encode(password));
+
+            log.info("Saving credential entity");
+            credentialRepository.save(credentialEntity);
+
+            log.info("Creating confirmation entity");
+            var confirmationEntity = new ConfirmationEntity(userEntity);
+
+            log.info("Saving confirmation entity");
+            confirmationRepository.save(confirmationEntity);
+
+            log.info("Publishing user event");
+            publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
+
+            log.info("User creation completed successfully");
+        } catch (Exception e) {
+            log.error("Error creating user: ", e);
+            throw new ApiException("Error creating user: " + e.getMessage());
+        }
+    }
+
+    /*private UserEntity createNewUser(String firstName, String lastName, String email) {
+        var role = getRoleName(Authority.USER.name());
+        return UserMapper.createUserEntity(firstName, lastName, email, role);
+    }*/
+
+    private UserEntity createNewUser(String firstName, String lastName, String email) {
+        log.info("Getting role for new user");
+        RoleEntity roleEntity = getRoleName("USER");
+
+        var userEntity = new UserEntity();
+        userEntity.setFirstName(firstName);
+        userEntity.setLastName(lastName);
+        userEntity.setEmail(email);
+        userEntity.setUserId(UUID.randomUUID().toString());
+        userEntity.setRole(roleEntity);
+
+        return userEntity;
     }
 
     @Override
@@ -373,8 +434,5 @@ public class UserServiceImpl implements UserService {
         return confirmationRepository.findByUserEntity(user).orElse(null); // because it can be we are checking for null when called
     }
 
-    private UserEntity createNewUser(String firstName, String lastName, String email) {
-        var role = getRoleName(Authority.USER.name());
-        return UserMapper.createUserEntity(firstName, lastName, email, role);
-    }
+
 }
