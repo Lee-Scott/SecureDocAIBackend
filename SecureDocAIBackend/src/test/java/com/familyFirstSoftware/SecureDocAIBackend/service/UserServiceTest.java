@@ -9,12 +9,12 @@ import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
-import com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.ConfirmationRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.CredentialRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.RoleRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.UserRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.service.impl.UserServiceImpl;
+import com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,9 +31,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @author Lee Scott
@@ -235,7 +234,7 @@ public class UserServiceTest {
         var result = userServiceImpl.setUpMfa(userId);
 
         // Assert
-        UserEntity resultUserEntity = UserMapper.toUserEntity(result, userEntity.getRole());
+        UserEntity resultUserEntity = UserUtils.toUserEntity(result, userEntity.getRole());
         assertThat(resultUserEntity.isMfa()).isTrue();
         verify(userRepository, times(1)).save(userEntity);
     }
@@ -258,7 +257,7 @@ public class UserServiceTest {
         userEntity.setMfa(false); // Just force it to pass
 
         // Assert
-        UserEntity resultUserEntity = UserMapper.toUserEntity(result, userEntity.getRole());
+        UserEntity resultUserEntity = UserUtils.toUserEntity(result, userEntity.getRole());
         assertThat(resultUserEntity.isMfa()).isFalse();
         verify(userRepository, times(1)).save(userEntity);
     }

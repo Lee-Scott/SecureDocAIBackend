@@ -7,9 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Lee Scott
@@ -27,9 +30,24 @@ public class UserPrincipal implements UserDetails {
     private final User user;
     private final CredentialEntity credentialEntity;
 
-    @Override
+    /*@Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return AuthorityUtils.commaSeparatedStringToAuthorityList(user.getAuthorities());
+    }*/
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Get the individual authorities from the comma-separated string
+        Collection<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(user.getAuthorities());
+
+        // Add the role as an authority with ROLE_ prefix
+        if (user.getRole() != null && !user.getRole().isEmpty()) {
+            List<GrantedAuthority> updatedAuthorities = new ArrayList<>(authorities);
+            updatedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+            return updatedAuthorities;
+        }
+
+        return authorities;
     }
 
     @Override

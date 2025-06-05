@@ -2,8 +2,8 @@ package com.familyFirstSoftware.SecureDocAIBackend.repository;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import org.springframework.data.domain.Page;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -37,6 +37,13 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> 
     Optional<IDocument> findDocumentByDocumentId(String documentId);
 
     Optional<DocumentEntity> findByDocumentId(String documentId);
+
+    boolean existsByCreatedBy(Long createdBy);
+    boolean existsByUpdatedBy(Long updatedBy);
+
+    default void checkUserHasNoDocuments(Long userEntityId) {
+        if (existsByCreatedBy(userEntityId) || existsByUpdatedBy(userEntityId)) {
+            throw new ApiException("Cannot delete user: User has associated documents. Delete the documents first.");
+        }
+    }
 }
-
-
