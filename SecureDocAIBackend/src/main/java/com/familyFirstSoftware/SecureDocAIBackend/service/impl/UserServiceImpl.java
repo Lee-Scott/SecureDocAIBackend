@@ -7,15 +7,13 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
-import com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper;
-import com.familyFirstSoftware.SecureDocAIBackend.repository.ConfirmationRepository;
-import com.familyFirstSoftware.SecureDocAIBackend.repository.CredentialRepository;
-import com.familyFirstSoftware.SecureDocAIBackend.repository.RoleRepository;
-import com.familyFirstSoftware.SecureDocAIBackend.repository.UserRepository;
+import com.familyFirstSoftware.SecureDocAIBackend.repository.*;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
+import com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils;
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
@@ -38,15 +36,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.BiFunction;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.PASSWORD_RESET;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.EventType.REGISTRATION;
-import static com.familyFirstSoftware.SecureDocAIBackend.mapper.UserMapper.fromUserEntity;
-import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.qrCodeImageUri;
-import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.qrCodeSecret;
+import static com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.validation.UserValidation.verifyAccountStatus;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.time.LocalDateTime.now;
@@ -73,11 +68,13 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final CredentialRepository credentialRepository;
     private final ConfirmationRepository confirmationRepository;
+    private final DocumentRepository documentRepository;
+
     private final BCryptPasswordEncoder encoder;
     private final CacheStore<String, Integer> userCache;
     private final ApplicationEventPublisher publisher;
 
-    /*@Override
+    @Override
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email));
         var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password));
@@ -85,8 +82,13 @@ public class UserServiceImpl implements UserService {
         var confirmationEntity = new ConfirmationEntity(userEntity);
         confirmationRepository.save(confirmationEntity);
         publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
-    }*/
-    @Override
+    }
+    private UserEntity createNewUser(String firstName, String lastName, String email) {
+        var role = getRoleName(Authority.USER.name());
+        return createUserEntity(firstName, lastName, email, role);
+    }
+
+    /*@Override
     public void createUser(String firstName, String lastName, String email, String password) {
         try {
             log.info("Creating new user: {} {}", firstName, lastName);
@@ -126,14 +128,9 @@ public class UserServiceImpl implements UserService {
             log.error("Error creating user: ", e);
             throw new ApiException("Error creating user: " + e.getMessage());
         }
-    }
-
-    /*private UserEntity createNewUser(String firstName, String lastName, String email) {
-        var role = getRoleName(Authority.USER.name());
-        return UserMapper.createUserEntity(firstName, lastName, email, role);
     }*/
 
-    private UserEntity createNewUser(String firstName, String lastName, String email) {
+    /*private UserEntity createNewUser(String firstName, String lastName, String email) {
         log.info("Getting role for new user");
         RoleEntity roleEntity = getRoleName("USER");
 
@@ -145,7 +142,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setRole(roleEntity);
 
         return userEntity;
-    }
+    }*/
 
     @Override
     public RoleEntity getRoleName(String name) {
@@ -190,16 +187,18 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
     }
 
+
+
     @Override
     public User getUserByUserId(String userId) {
         var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
     public User getUserByEmail(String email) {
         UserEntity userEntity = getUserEntityByEmail(email);
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
@@ -216,7 +215,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setQrCodeSecret(codeSecret);
         userEntity.setMfa(true);
         userRepository.save(userEntity);
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
@@ -226,14 +225,14 @@ public class UserServiceImpl implements UserService {
         userEntity.setQrCodeSecret(EMPTY);
         userEntity.setQrCodeImageUri(EMPTY);
         userRepository.save(userEntity);
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
     public User verifyQrCode(String userId, String qrCode) {
         var userEntity = getUserEntityByUserId(userId);
         verifyCode(qrCode, userEntity.getQrCodeSecret());
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
@@ -266,7 +265,7 @@ public class UserServiceImpl implements UserService {
         }
         verifyAccountStatus(userEntity);
         confirmationRepository.delete(confirmationEntity);
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
@@ -305,7 +304,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setPhone(phone);
         userEntity.setBio(bio);
         userRepository.save(userEntity);
-        return UserMapper.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
@@ -361,7 +360,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll()
                 .stream()
                 .filter(userEntity -> !SYSTEM_GMAIL.equalsIgnoreCase(userEntity.getEmail()))
-                .map(userEntity -> fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId())))
+                .map(userEntity -> UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId())))
                 .collect(toList());
     }
 
@@ -432,6 +431,40 @@ public class UserServiceImpl implements UserService {
 
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null); // because it can be we are checking for null when called
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteUserByUserId(String userId) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        Long userEntityId = userEntity.getId();
+
+        // Check if user has any documents
+        // This is necessary because documents have ON DELETE RESTRICT
+        if (documentRepository.existsByCreatedBy(userEntityId) ||
+                documentRepository.existsByUpdatedBy(userEntityId)) {
+            throw new ApiException("Cannot delete user: User has associated documents. Delete the documents first.");
+        }
+
+        // Check if user is referenced in roles table
+        // This is necessary because roles have ON DELETE RESTRICT
+        if (roleRepository.existsByCreatedBy(userEntityId) ||
+                roleRepository.existsByUpdatedBy(userEntityId)) {
+            throw new ApiException("Cannot delete user: User is referenced in roles. Update role references first.");
+        }
+
+        // For user_roles, we don't need a separate repository.
+        // The relationship is managed through the UserEntity.role field with @JoinTable
+
+        // The following tables have ON DELETE CASCADE, so we don't need to delete them explicitly:
+        // - confirmations
+        // - credentials
+
+        // Finally delete the user
+        userRepository.delete(userEntity);
+
+        log.info("User with ID {} has been deleted", userId);
     }
 
 

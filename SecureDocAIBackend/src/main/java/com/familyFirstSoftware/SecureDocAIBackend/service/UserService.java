@@ -1,12 +1,9 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
-import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.UserRequest;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
-
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -46,5 +43,7 @@ public interface UserService {
     String uploadPhoto(String userId, MultipartFile file);
     User getUserById(Long id);
     List<User> getUsers();
+
+    void deleteUserByUserId(String userId);
 }
 

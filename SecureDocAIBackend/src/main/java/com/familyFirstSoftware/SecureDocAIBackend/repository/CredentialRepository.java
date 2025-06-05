@@ -21,5 +21,6 @@ public interface CredentialRepository extends JpaRepository<CredentialEntity, Lo
     Optional<CredentialEntity> getCredentialByUserEntityId(Long userId);
 
 
+    Optional<CredentialEntity> findByUserEntityId(Long id);
 }
 

@@ -52,7 +52,8 @@ public class Constants {
             "/user/image",
             "/user/verify/account",
             "/user/verify/password",
-            "/user/verify/code"
+            "/user/verify/code",
+            "/user/verify"
     };
 
     public static final String AUTHORITIES = "authorities";
@@ -99,5 +100,3 @@ public class Constants {
 
     public static final String SYSTEM_GMAIL = "system@gmail.com";
 }
-
-
