@@ -58,8 +58,8 @@ public class FilterChainConfiguration {
                         request.requestMatchers(PUBLIC_URLS).permitAll()
                                 .requestMatchers(OPTIONS).permitAll()
                                 .requestMatchers(DELETE, "/user/delete/**")
-                                .hasAnyAuthority("user:delete")
-                                .requestMatchers(DELETE, "/document/delete/**")
+                                //.hasAnyAuthority("user:delete")
+                                //.requestMatchers(DELETE, "/document/delete/**")
                                 .hasAnyAuthority("document:delete")
                                 .anyRequest().authenticated())
                 .with(apiHttpConfigurer, withDefaults());
