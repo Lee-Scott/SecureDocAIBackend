@@ -22,14 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.FILE_STORAGE;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.DocumentUtils.*;
@@ -99,6 +93,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
 
+    // Todo create a separate table that logs all actions related to documents
     @Override
     public IDocument updateDocument(String documentId, String name, String description) {
         try {
