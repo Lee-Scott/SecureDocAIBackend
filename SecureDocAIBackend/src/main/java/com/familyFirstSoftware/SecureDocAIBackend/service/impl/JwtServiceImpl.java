@@ -5,11 +5,9 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.TokenData;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType;
 import com.familyFirstSoftware.SecureDocAIBackend.function.TriConsumer;
-
 import com.familyFirstSoftware.SecureDocAIBackend.security.JwtConfiguration;
 import com.familyFirstSoftware.SecureDocAIBackend.service.JwtService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -24,19 +22,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.UUID;
-import java.util.function.BiConsumer;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.ACCESS;
@@ -118,7 +107,7 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                 var accessToken = createToken(user, Token::getAccess);
                 var cookie = new Cookie(type.getValue(), accessToken);
                 cookie.setHttpOnly(true);
-                cookie.setSecure(true);
+                cookie.setSecure(true); //TODO: set with HTPPS
                 cookie.setMaxAge(2 * 60);
                 cookie.setPath("/");
                 cookie.setAttribute("SameSite", NONE.name());

@@ -43,6 +43,7 @@ import static org.springframework.http.HttpStatus.OK;
  * This class handles user-related HTTP requests such as registration, account verification, and MFA setup.
  * Todo: define roles and permissions better for control and who can do what. Can also do some in filterCHainConfig
  *
+ * Todo: delete should just inactivate the account. current one really deletes user completely
  */
 @Slf4j
 @RestController

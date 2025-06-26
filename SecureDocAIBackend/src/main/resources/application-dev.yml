@@ -14,7 +14,12 @@ EMAIL_HOST: smtp.gmail.com
 EMAIL_PORT: 587
 EMAIL_USERNAME: leehscott24@gmail.com
 EMAIL_PASSWORD: smqm vgnz mzto gqlz
-VERIFY_EMAIL_HOST: http://localhost:8085 # Change to 3000 or React port'
+VERIFY_EMAIL_HOST: http://localhost:5173 # TODO: Change to for Docker or w/e when hosting. probably should be variable and passed on the fly
 
 JWT_SECRET: ${SECRET}
 JWT_EXPIRATION: 432_000_000
+
+server:
+  ssl:
+    enabled: false
+  port: ${SERVER_PORT}
