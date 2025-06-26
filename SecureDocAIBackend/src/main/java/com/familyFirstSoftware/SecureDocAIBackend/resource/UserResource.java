@@ -122,7 +122,7 @@ public class UserResource {
     }
 
     @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    // @AuthenticationPrincipal User needs to be authenticated to access this route
+    //@AuthenticationPrincipal User needs to be authenticated to access this route
     @PatchMapping (path = {"/mfa/setup"})
     public ResponseEntity<Response> setupMfa(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
         log.info("Authenticated user: {}", userPrincipal);
@@ -174,7 +174,7 @@ public class UserResource {
     }
     // End - Reset password when not logged in ----------------------------------------------------------------------
 
-    @PreAuthorize("hasAnyAuthority('user:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    //@PreAuthorize("hasAnyAuthority('user:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PatchMapping(path = {"/list"})
     public ResponseEntity<Response> getUsers(@AuthenticationPrincipal User user, HttpServletRequest request) {
         return ResponseEntity.ok().body(getResponse(request, Map.of("users", userService.getUsers()), "Users retrieved", OK));
@@ -206,7 +206,7 @@ public class UserResource {
 
 
     @DeleteMapping("/delete/{userId}")
-    @PreAuthorize("hasAnyAuthority('user:delete') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    //@PreAuthorize("hasAnyAuthority('user:delete') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Response> deleteUser(@PathVariable("userId") String userId, HttpServletRequest request) {
         userService.deleteUserByUserId(userId);
         return ResponseEntity.ok().body(
