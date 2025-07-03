@@ -27,6 +27,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.FILE_STORAGE;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.getResponse;
@@ -62,7 +63,8 @@ public class UserResource {
 
 
     @GetMapping(path = {"/verify"})
-    public ResponseEntity<Response> verifyAccount(@RequestParam("key") String key, HttpServletRequest request) {
+    public ResponseEntity<Response> verifyAccount(@RequestParam("key") String key, HttpServletRequest request) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(2); // Simulate some processing delay
         userService.verifyAccountKey(key);
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account verified.", OK));
     }
@@ -133,8 +135,8 @@ public class UserResource {
     @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PatchMapping(path = {"/mfa/cancel"})
     public ResponseEntity<Response> cancelMfa(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
-        userService.cancelMfa(userPrincipal.getId());
-        var user = userService.setUpMfa(userPrincipal.getId());
+        //log.info("Authenticated user: {}", userPrincipal);
+        var user = userService.cancelMfa(userPrincipal.getId());
         return ResponseEntity.ok(getResponse(request, Map.of("user", user), "MFA cancelled.", OK));
     }
 

@@ -224,7 +224,15 @@ public class UserServiceImpl implements UserService {
         userEntity.setMfa(false);
         userEntity.setQrCodeSecret(EMPTY);
         userEntity.setQrCodeImageUri(EMPTY);
+
+        // Save changes to the database
+        // log.info("Saving updated user entity to the database...");
         userRepository.save(userEntity);
+        // log.info("User entity saved successfully. MFA status: {}", userEntity.isMfa());
+        // Invalidate cache if applicable
+        userCache.evict(userEntity.getEmail());
+        // log.info("Cache invalidated for user: {}", userEntity.getEmail());
+
         return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
