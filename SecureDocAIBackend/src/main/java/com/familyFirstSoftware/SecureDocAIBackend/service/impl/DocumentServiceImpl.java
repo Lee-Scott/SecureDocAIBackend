@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -114,10 +115,6 @@ public class DocumentServiceImpl implements DocumentService {
         return documentRepository.findByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
     }
 
-    @Override
-    public void deleteDocument(String documentId) {
-
-    }
 
     @Override
     public IDocument getDocumentByDocumentId(String documentId) {
@@ -132,6 +129,22 @@ public class DocumentServiceImpl implements DocumentService {
             return new UrlResource(filePath.toUri());
         } catch (Exception exception) {
             throw new ApiException("Unable to download document");
+        }
+    }
+
+    @Override
+    public void deleteDocument(String documentId) {
+        try {
+            DocumentEntity documentEntity = getDocumentEntity(documentId);
+            // Delete file from filesystem
+            var filePath = Paths.get(FILE_STORAGE).toAbsolutePath().normalize().resolve(documentEntity.getName());
+            Files.deleteIfExists(filePath);
+            // Delete database record
+            documentRepository.delete(documentEntity);
+        } catch (IOException exception) {
+            throw new ApiException("Unable to delete document file: " + exception.getMessage());
+        } catch (Exception exception) {
+            throw new ApiException("Unable to delete document: " + exception.getMessage());
         }
     }
 }

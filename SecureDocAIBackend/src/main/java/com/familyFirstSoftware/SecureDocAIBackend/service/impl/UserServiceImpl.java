@@ -88,61 +88,6 @@ public class UserServiceImpl implements UserService {
         return createUserEntity(firstName, lastName, email, role);
     }
 
-    /*@Override
-    public void createUser(String firstName, String lastName, String email, String password) {
-        try {
-            log.info("Creating new user: {} {}", firstName, lastName);
-            var userEntity = new UserEntity();
-            userEntity.setFirstName(firstName);
-            userEntity.setLastName(lastName);
-            userEntity.setEmail(email);
-            userEntity.setUserId(UUID.randomUUID().toString());
-
-            log.info("Getting role for new user");
-            RoleEntity roleEntity = roleRepository.findByNameIgnoreCase("USER")
-                    .orElseThrow(() -> new ApiException("Role not found"));
-            userEntity.setRole(roleEntity);
-
-            log.info("Saving user entity");
-            userEntity = userRepository.save(userEntity);
-
-            log.info("Creating credential entity");
-            var credentialEntity = new CredentialEntity();
-            credentialEntity.setUserEntity(userEntity);
-            credentialEntity.setPassword(encoder.encode(password));
-
-            log.info("Saving credential entity");
-            credentialRepository.save(credentialEntity);
-
-            log.info("Creating confirmation entity");
-            var confirmationEntity = new ConfirmationEntity(userEntity);
-
-            log.info("Saving confirmation entity");
-            confirmationRepository.save(confirmationEntity);
-
-            log.info("Publishing user event");
-            publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
-
-            log.info("User creation completed successfully");
-        } catch (Exception e) {
-            log.error("Error creating user: ", e);
-            throw new ApiException("Error creating user: " + e.getMessage());
-        }
-    }*/
-
-    /*private UserEntity createNewUser(String firstName, String lastName, String email) {
-        log.info("Getting role for new user");
-        RoleEntity roleEntity = getRoleName("USER");
-
-        var userEntity = new UserEntity();
-        userEntity.setFirstName(firstName);
-        userEntity.setLastName(lastName);
-        userEntity.setEmail(email);
-        userEntity.setUserId(UUID.randomUUID().toString());
-        userEntity.setRole(roleEntity);
-
-        return userEntity;
-    }*/
 
     @Override
     public RoleEntity getRoleName(String name) {
@@ -290,15 +235,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(String userId, String oldPassword, String newPassword, String confirmNewPassword) {
-        if(!Objects.equals(confirmNewPassword, newPassword)){
+        // Validate input parameters
+        if (oldPassword == null || oldPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Old password cannot be null or empty");
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("New password cannot be null or empty");
+        }
+        if (confirmNewPassword == null || confirmNewPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Confirm password cannot be null or empty");
+        }
+        if (!Objects.equals(confirmNewPassword, newPassword)) {
             throw new ApiException("Passwords do not match. Please try again.");
         }
-        var user = getUserEntityByUserId(userId);
-        verifyAccountStatus(user);
-        var credential = getUserCredentialById(user.getId());
-        if(!encoder.matches(oldPassword, credential.getPassword())) { // validate they are who they say they are
-            throw new ApiException("Existing Passwords is incorrect. Please try again.");
+
+        // Get user entity once
+        var userEntity = userRepository.findUserByUserId(userId)
+                .orElseThrow(() -> new ApiException("User not found"));
+
+        // Get credential entity once
+        var credential = credentialRepository.getCredentialByUserEntityId(userEntity.getId())
+                .orElseThrow(() -> new ApiException("Credentials not found for user"));
+
+        // Verify old password
+        if (!encoder.matches(oldPassword, credential.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
         }
+
+        // Update with new password
         credential.setPassword(encoder.encode(newPassword));
         credentialRepository.save(credential);
     }
@@ -364,11 +328,17 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
     }
 
-    public List<User> getUsers(){
+    public List<User> getUsers() {
         return userRepository.findAll()
                 .stream()
                 .filter(userEntity -> !SYSTEM_GMAIL.equalsIgnoreCase(userEntity.getEmail()))
-                .map(userEntity -> UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId())))
+                .map(userEntity -> {
+                    var role = userEntity.getRole();
+                    if (role == null) {
+                        role = getRoleName("USER");
+                    }
+                    return UserUtils.fromUserEntity(userEntity, role, getUserCredentialById(userEntity.getId()));
+                })
                 .collect(toList());
     }
 
