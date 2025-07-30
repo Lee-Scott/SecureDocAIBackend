@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +26,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.FILE_STORAGE;
 import static com.familyFirstSoftware.SecureDocAIBackend.utils.RequestUtils.getResponse;
@@ -64,7 +62,7 @@ public class UserResource {
 
     @GetMapping(path = {"/verify"})
     public ResponseEntity<Response> verifyAccount(@RequestParam("key") String key, HttpServletRequest request) throws InterruptedException {
-        TimeUnit.SECONDS.sleep(2); // Simulate some processing delay
+        //TimeUnit.SECONDS.sleep(2); // Simulate some processing delay
         userService.verifyAccountKey(key);
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account verified.", OK));
     }
@@ -74,6 +72,13 @@ public class UserResource {
     public ResponseEntity<Response> profile(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
         var user = userService.getUserByUserId(userPrincipal.getUserId());
         return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "Profile retrieved.", OK));
+    }
+
+    @GetMapping(path = {"/profile/{userId}"})
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Response> viewUserProfile(@PathVariable("userId") String userId, HttpServletRequest request) {
+        var user = userService.getUserByUserId(userId);
+        return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "User profile retrieved.", OK));
     }
 
     // User ID comes from userPrincipal, but the rest of the information needed to update comes from userRequest.
@@ -208,7 +213,7 @@ public class UserResource {
 
 
     @DeleteMapping("/delete/{userId}")
-    //@PreAuthorize("hasAnyAuthority('user:delete') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('user:delete') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Response> deleteUser(@PathVariable("userId") String userId, HttpServletRequest request) {
         userService.deleteUserByUserId(userId);
         return ResponseEntity.ok().body(

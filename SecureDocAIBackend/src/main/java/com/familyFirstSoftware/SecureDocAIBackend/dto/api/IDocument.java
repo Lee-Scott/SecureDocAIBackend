@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
  *
  */
 
-
-
 public interface IDocument {
     Long getId();
     void setId(Long id);

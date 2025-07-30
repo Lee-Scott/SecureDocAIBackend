@@ -2,6 +2,8 @@ package com.familyFirstSoftware.SecureDocAIBackend.repository;
 
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -18,9 +20,9 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
+
+
     Optional<UserEntity> findUserByEmailIgnoreCase(String username);
-
-
     Optional<UserEntity> findUserByUserId(String id);
 }
 

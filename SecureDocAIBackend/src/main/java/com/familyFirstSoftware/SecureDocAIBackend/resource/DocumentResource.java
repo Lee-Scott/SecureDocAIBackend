@@ -102,5 +102,14 @@ public class DocumentResource {
                 .body(resource);
     }
 
+    @PreAuthorize("hasAnyAuthority('document:delete') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @DeleteMapping("/delete/{documentId}")
+    public ResponseEntity<Response> deleteDocument(@AuthenticationPrincipal User user,
+                                                   @PathVariable("documentId") String documentId,
+                                                   HttpServletRequest request) {
+        documentService.deleteDocument(documentId);
+        return ResponseEntity.ok(getResponse(request, of(), "Document deleted successfully", OK));
+    }
+
 }
 
