@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@ToString
 public class User {
     private Long id;
     private Long createdBy;

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
+
 /**
  * @author Lee Scott
  * @version 1.0
@@ -23,25 +25,20 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
     Optional<ChatRoomEntity> findByChatRoomId(String chatRoomId);
 
     // Find chat room between two specific users (order doesn't matter)
-    @Query("SELECT cr FROM ChatRoomEntity cr WHERE " +
-            "(cr.user1.userId = :user1Id AND cr.user2.userId = :user2Id) OR " +
-            "(cr.user1.userId = :user2Id AND cr.user2.userId = :user1Id)")
+    @Query(CHATROOM_FIND_BETWEEN_USERS_QUERY)
     Optional<ChatRoomEntity> findChatRoomBetweenUsers(@Param("user1Id") String user1Id,
                                                       @Param("user2Id") String user2Id);
 
     // Find all active chat rooms for a specific user
-    @Query("SELECT cr FROM ChatRoomEntity cr WHERE " +
-            "(cr.user1.userId = :userId OR cr.user2.userId = :userId) AND cr.isActive = true")
+    @Query(CHATROOM_FIND_ACTIVE_FOR_USER_QUERY)
     List<ChatRoomEntity> findActiveRoomsForUser(@Param("userId") String userId);
 
     // Check if user has any chat rooms (for deletion checks)
-    @Query("SELECT COUNT(cr) > 0 FROM ChatRoomEntity cr WHERE " +
-            "cr.user1.userId = :userId OR cr.user2.userId = :userId")
+    @Query(CHATROOM_EXISTS_BY_USER_QUERY)
     boolean existsByUser(@Param("userId") String userId);
 
     // Find all chat rooms for a user (including inactive ones)
-    @Query("SELECT cr FROM ChatRoomEntity cr WHERE " +
-            "cr.user1.userId = :userId OR cr.user2.userId = :userId")
+    @Query(CHATROOM_FIND_ALL_FOR_USER_QUERY)
     List<ChatRoomEntity> findAllRoomsForUser(@Param("userId") String userId);
 
     boolean existsByCreatedBy(Long userEntityId);

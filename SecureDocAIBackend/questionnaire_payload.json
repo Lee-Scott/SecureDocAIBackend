@@ -1,0 +1,236 @@
+{
+  "title": "Comprehensive Medical Assessment Questionnaire",
+  "description": "A comprehensive health assessment questionnaire covering general information, symptoms, and lifestyle factors",
+  "category": "HEALTHCARE",
+  "isActive": true,
+  "estimatedTimeMinutes": 20,
+  "pages": [
+    {
+      "pageNumber": 1,
+      "title": "Personal Information",
+      "description": "Basic personal and demographic information",
+      "questions": [
+        {
+          "questionNumber": 1,
+          "questionText": "What is your age?",
+          "questionType": "NUMBER",
+          "isRequired": true,
+          "helpText": "Please enter your age in years",
+          "validationRules": {
+            "minValue": 0,
+            "maxValue": 120
+          }
+        },
+        {
+          "questionNumber": 2,
+          "questionText": "What is your gender?",
+          "questionType": "SINGLE_CHOICE",
+          "isRequired": true,
+          "helpText": "Please select your gender",
+          "options": [
+            {
+              "optionText": "Male",
+              "optionValue": "male",
+              "orderIndex": 1
+            },
+            {
+              "optionText": "Female",
+              "optionValue": "female",
+              "orderIndex": 2
+            },
+            {
+              "optionText": "Other",
+              "optionValue": "other",
+              "orderIndex": 3
+            },
+            {
+              "optionText": "Prefer not to say",
+              "optionValue": "prefer_not_to_say",
+              "orderIndex": 4
+            }
+          ]
+        },
+        {
+          "questionNumber": 3,
+          "questionText": "What is your full name?",
+          "questionType": "TEXT",
+          "isRequired": true,
+          "helpText": "Please enter your first and last name",
+          "validationRules": {
+            "maxLength": 100,
+            "minLength": 2
+          }
+        }
+      ]
+    },
+    {
+      "pageNumber": 2,
+      "title": "Health History",
+      "description": "Information about your medical history and current health status",
+      "questions": [
+        {
+          "questionNumber": 4,
+          "questionText": "Do you have any chronic medical conditions?",
+          "questionType": "YES_NO",
+          "isRequired": true,
+          "helpText": "Select yes if you have any ongoing medical conditions"
+        },
+        {
+          "questionNumber": 5,
+          "questionText": "Which of the following medical conditions do you currently have? (Select all that apply)",
+          "questionType": "MULTIPLE_CHOICE",
+          "isRequired": false,
+          "helpText": "Check all conditions that apply to you",
+          "options": [
+            {
+              "optionText": "Diabetes",
+              "optionValue": "diabetes",
+              "orderIndex": 1
+            },
+            {
+              "optionText": "High Blood Pressure",
+              "optionValue": "high_blood_pressure",
+              "orderIndex": 2
+            },
+            {
+              "optionText": "Heart Disease",
+              "optionValue": "heart_disease",
+              "orderIndex": 3
+            },
+            {
+              "optionText": "Asthma",
+              "optionValue": "asthma",
+              "orderIndex": 4
+            },
+            {
+              "optionText": "Depression",
+              "optionValue": "depression",
+              "orderIndex": 5
+            },
+            {
+              "optionText": "Anxiety",
+              "optionValue": "anxiety",
+              "orderIndex": 6
+            },
+            {
+              "optionText": "None of the above",
+              "optionValue": "none",
+              "orderIndex": 7
+            }
+          ]
+        },
+        {
+          "questionNumber": 6,
+          "questionText": "When was your last medical checkup?",
+          "questionType": "DATE",
+          "isRequired": true,
+          "helpText": "Please select the date of your most recent medical examination"
+        }
+      ]
+    },
+    {
+      "pageNumber": 3,
+      "title": "Lifestyle Assessment",
+      "description": "Questions about your lifestyle and daily habits",
+      "questions": [
+        {
+          "questionNumber": 7,
+          "questionText": "On a scale of 1-10, how would you rate your overall health?",
+          "questionType": "SCALE",
+          "isRequired": true,
+          "helpText": "1 = Very Poor, 10 = Excellent",
+          "validationRules": {
+            "minValue": 1,
+            "maxValue": 10
+          }
+        },
+        {
+          "questionNumber": 8,
+          "questionText": "How many hours of sleep do you typically get per night?",
+          "questionType": "NUMBER",
+          "isRequired": true,
+          "helpText": "Enter the average number of hours you sleep",
+          "validationRules": {
+            "minValue": 0,
+            "maxValue": 24
+          }
+        },
+        {
+          "questionNumber": 9,
+          "questionText": "Do you currently smoke tobacco products?",
+          "questionType": "YES_NO",
+          "isRequired": true,
+          "helpText": "This includes cigarettes, cigars, pipes, etc."
+        },
+        {
+          "questionNumber": 10,
+          "questionText": "Please describe any current symptoms or health concerns you have:",
+          "questionType": "TEXT",
+          "isRequired": false,
+          "helpText": "Provide as much detail as you feel comfortable sharing",
+          "validationRules": {
+            "maxLength": 1000
+          }
+        }
+      ]
+    }
+  ]
+}
+
+// PATCH Request Body for updating questionnaire response:
+{
+  "isCompleted": true,
+  "totalScore": 85,
+  "responses": [
+    {
+      "questionId": "a5a1a42a-c89f-37fa-754d-1b47600b9456",
+      "answerValue": "35",
+      "isSkipped": false
+    },
+    {
+      "questionId": "be9e5fda-3623-952c-f905-e7414fd8eb16",
+      "answerValue": "female",
+      "isSkipped": false
+    },
+    {
+      "questionId": "d48e033e-2a76-da5d-9491-8a9aa616ee44",
+      "answerValue": "Jane Doe",
+      "isSkipped": false
+    },
+    {
+      "questionId": "823d4b10-6eb6-6a06-8387-6ee9b271f021",
+      "answerValue": "yes",
+      "isSkipped": false
+    },
+    {
+      "questionId": "4a1671a6-d1ef-ece2-0a31-e873a7cf9947",
+      "answerValue": "diabetes,high_blood_pressure",
+      "isSkipped": false
+    },
+    {
+      "questionId": "d48450cb-61ed-368a-4c84-3a09e9b2d04a",
+      "answerValue": "2024-06-15",
+      "isSkipped": false
+    },
+    {
+      "questionId": "28445c01-5e41-bdf7-477b-34d53155c5e2",
+      "answerValue": "8",
+      "isSkipped": false
+    },
+    {
+      "questionId": "9ac00acd-8c50-e206-5894-313513da0d4f",
+      "answerValue": "7",
+      "isSkipped": false
+    },
+    {
+      "questionId": "ac84787d-63ee-ea27-5cd3-74f185ac4f81",
+      "answerValue": "no",
+      "isSkipped": false
+    },
+    {
+      "questionId": "18af5745-d960-1c92-04ca-dea75d13310c",
+      "answerValue": "Occasional headaches and feeling tired",
+      "isSkipped": false
+    }
+  ]
+}

@@ -78,8 +78,10 @@ public class Constants {
     public static final String AI_AUTHORITIES =
             "chat:read,chat:write,document:read,lobby:read";
 
-    // Query
-    public static final String SELECT_DOCUMENTS_QUERY =
+    public static final String SYSTEM_GMAIL = "system@gmail.com";
+
+    // ===== DOCUMENT QUERIES =====
+    public static final String DOCUMENT_SELECT_ALL_QUERY =
             "SELECT doc.id, doc.document_id, doc.name, doc.description, doc.uri, doc.icon, doc.size, doc.formatted_size, " +
                     "doc.extension, doc.reference_id, doc.created_at, doc.updated_at, " +
                     "CONCAT(owner.first_name, ' ', owner.last_name) AS owner_name, owner.email AS owner_email, " +
@@ -88,18 +90,79 @@ public class Constants {
                     "FROM documents doc JOIN users owner ON owner.id = doc.created_by " +
                     "JOIN users updater ON updater.id = doc.updated_by";
 
-    public static final String SELECT_DOCUMENT_QUERY =
-            SELECT_DOCUMENTS_QUERY + " WHERE doc.document_id = ?1";
+    public static final String DOCUMENT_SELECT_BY_ID_QUERY =
+            DOCUMENT_SELECT_ALL_QUERY + " WHERE doc.document_id = ?1";
 
-    public static final String SELECT_COUNT_DOCUMENTS_QUERY =
+    public static final String DOCUMENT_COUNT_ALL_QUERY =
             "SELECT COUNT(*) FROM documents";
 
-    public static final String SELECT_DOCUMENTS_BY_NAME_QUERY =
-            SELECT_DOCUMENTS_QUERY +
-                    " WHERE doc.name ~* :documentName";
+    public static final String DOCUMENT_SELECT_BY_NAME_QUERY =
+            DOCUMENT_SELECT_ALL_QUERY + " WHERE doc.name ~* :documentName";
 
-    public static final String SELECT_COUNT_DOCUMENTS_BY_NAME_QUERY =
+    public static final String DOCUMENT_COUNT_BY_NAME_QUERY =
             "SELECT COUNT(*) FROM documents WHERE name ~* :documentName";
 
-    public static final String SYSTEM_GMAIL = "system@gmail.com";
+    // ===== CHAT ROOM QUERIES =====
+    public static final String CHATROOM_FIND_BETWEEN_USERS_QUERY =
+            "SELECT cr FROM ChatRoomEntity cr WHERE " +
+            "(cr.user1.userId = :user1Id AND cr.user2.userId = :user2Id) OR " +
+            "(cr.user1.userId = :user2Id AND cr.user2.userId = :user1Id)";
+
+    public static final String CHATROOM_FIND_ACTIVE_FOR_USER_QUERY =
+            "SELECT cr FROM ChatRoomEntity cr WHERE " +
+            "(cr.user1.userId = :userId OR cr.user2.userId = :userId) AND cr.isActive = true";
+
+    public static final String CHATROOM_EXISTS_BY_USER_QUERY =
+            "SELECT COUNT(cr) > 0 FROM ChatRoomEntity cr WHERE " +
+            "cr.user1.userId = :userId OR cr.user2.userId = :userId";
+
+    public static final String CHATROOM_FIND_ALL_FOR_USER_QUERY =
+            "SELECT cr FROM ChatRoomEntity cr WHERE " +
+            "cr.user1.userId = :userId OR cr.user2.userId = :userId";
+
+    // ===== CHAT MESSAGE QUERIES =====
+    public static final String CHATMESSAGE_SELECT_BY_ROOM_ID_QUERY =
+            "SELECT m FROM ChatMessageEntity m " +
+            "JOIN FETCH m.sender s " +
+            "JOIN FETCH s.role " +
+            "WHERE m.chatRoom.chatRoomId = :chatRoomId " +
+            "ORDER BY m.createdAt ASC";
+
+    // ===== QUESTIONNAIRE QUERIES =====
+    public static final String QUESTIONNAIRE_FIND_WITH_FILTERS_QUERY =
+            "SELECT q FROM QuestionnaireEntity q WHERE q.isActive = true AND " +
+            "(:category IS NULL OR q.category = :category)";
+
+    public static final String QUESTIONNAIRE_COUNT_BY_CREATED_BY_QUERY =
+            "SELECT COUNT(q) FROM QuestionnaireEntity q WHERE q.createdBy = :userId";
+
+    // ===== QUESTIONNAIRE RESPONSE QUERIES =====
+    public static final String QUESTIONNAIRE_RESPONSE_FIND_BY_QUESTIONNAIRE_ID_QUERY =
+            "SELECT qr FROM QuestionnaireResponseEntity qr WHERE qr.questionnaire.id = :questionnaireId";
+
+    public static final String QUESTIONNAIRE_RESPONSE_COUNT_BY_QUESTIONNAIRE_ID_QUERY =
+            "SELECT COUNT(qr) FROM QuestionnaireResponseEntity qr WHERE qr.questionnaire.id = :questionnaireId";
+
+    public static final String QUESTIONNAIRE_RESPONSE_COUNT_COMPLETED_BY_QUESTIONNAIRE_ID_QUERY =
+            "SELECT COUNT(qr) FROM QuestionnaireResponseEntity qr WHERE qr.questionnaire.id = :questionnaireId AND qr.isCompleted = true";
+
+    public static final String QUESTIONNAIRE_RESPONSE_AVG_COMPLETION_TIME_QUERY =
+            "SELECT AVG((EXTRACT(EPOCH FROM qr.completed_at) - EXTRACT(EPOCH FROM qr.started_at))/60.0) " +
+            "FROM questionnaire_responses qr " +
+            "WHERE qr.questionnaire_id = :questionnaireId AND qr.is_completed = true";
+
+    // ===== QUESTION RESPONSE QUERIES =====
+    public static final String QUESTION_RESPONSE_FIND_BY_QUESTION_ID_QUERY =
+            "SELECT qr FROM QuestionResponseEntity qr WHERE qr.question.id = :questionId";
+
+    public static final String QUESTION_RESPONSE_COUNT_BY_QUESTION_ID_QUERY =
+            "SELECT COUNT(qr) FROM QuestionResponseEntity qr WHERE qr.question.id = :questionId";
+
+    public static final String QUESTION_RESPONSE_COUNT_SKIPPED_BY_QUESTION_ID_QUERY =
+            "SELECT COUNT(qr) FROM QuestionResponseEntity qr WHERE qr.question.id = :questionId AND qr.isSkipped = true";
+
+    public static final String QUESTION_RESPONSE_ANSWER_DISTRIBUTION_QUERY =
+            "SELECT qr.answerValue, COUNT(qr) FROM QuestionResponseEntity qr " +
+            "WHERE qr.question.id = :questionId AND qr.isSkipped = false " +
+            "GROUP BY qr.answerValue ORDER BY COUNT(qr) DESC";
 }
