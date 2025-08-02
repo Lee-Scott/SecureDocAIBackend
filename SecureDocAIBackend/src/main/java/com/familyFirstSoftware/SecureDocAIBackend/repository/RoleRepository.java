@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @Repository
 public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
-    public Optional<RoleEntity> findByNameIgnoreCase(String name);
+    Optional<RoleEntity> findByNameIgnoreCase(String name);
 
     boolean existsByCreatedByOrUpdatedBy(Long userEntityId, Long userEntityId1);
     List<RoleEntity> findAllByNameIgnoreCase(String name);

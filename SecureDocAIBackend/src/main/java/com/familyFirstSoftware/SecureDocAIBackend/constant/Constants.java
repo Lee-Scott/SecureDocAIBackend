@@ -64,16 +64,19 @@ public class Constants {
     public static final String AUTHORITY_DELIMITER = ",";
 
     public static final String USER_AUTHORITIES =
-            "document:create,document:read,document:update,document:delete";
+            "document:create,document:read,document:update,document:delete,chat:read,chat:write,lobby:read";
 
     public static final String ADMIN_AUTHORITIES =
-            "user:create,user:read,user:update,document:create,document:read,document:update,document:delete";
+            "user:create,user:read,user:update,document:create,document:read,document:update,document:delete,chat:read,chat:write,lobby:read";
 
     public static final String SUPER_ADMIN_AUTHORITIES =
-            "user:create,user:read,user:update,user:delete,document:create,document:read,document:update,document:delete";
+            "user:create,user:read,user:update,user:delete,document:create,document:read,document:update,document:delete,chat:read,chat:write,chat:delete,lobby:create,lobby:read,lobby:update,lobby:delete,lobby:manage";
 
     public static final String MANAGER_AUTHORITIES =
-            "document:create,document:read,document:update,document:delete";
+            "document:create,document:read,document:update,document:delete,chat:read,chat:write,lobby:create,lobby:read,lobby:update,lobby:manage";
+
+    public static final String AI_AUTHORITIES =
+            "chat:read,chat:write,document:read,lobby:read";
 
     // Query
     public static final String SELECT_DOCUMENTS_QUERY =

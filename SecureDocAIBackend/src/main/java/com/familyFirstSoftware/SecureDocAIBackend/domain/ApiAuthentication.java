@@ -24,9 +24,9 @@ public class ApiAuthentication extends AbstractAuthenticationToken {
     private static final String PASSWORD_PROTECTED = "[PASSWORD PROTECTED]";
     private static final String EMAIL_PROTECTED = "[EMAIL PROTECTED]";
     private User user;
-    private String email;
-    private String password;
-    private boolean authenticated;
+    private final String email;
+    private final String password;
+    private final boolean authenticated;
 
     private ApiAuthentication(String email, String password) {
         super(AuthorityUtils.NO_AUTHORITIES);

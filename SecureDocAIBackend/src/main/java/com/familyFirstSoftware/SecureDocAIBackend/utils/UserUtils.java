@@ -95,7 +95,6 @@ public class UserUtils {
         } catch (Exception e) {
             throw new ApiException("Unable to create QR code URI");
         }
-        ;
         return getDataUriForImage(imageData, generator.getImageMimeType());
     };
 

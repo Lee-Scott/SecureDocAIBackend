@@ -89,7 +89,15 @@ public class UserResource {
         return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "User updated successfully.", OK));
     }
 
-    //@PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    // Admin endpoint to update any user's profile
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PatchMapping(path = {"/update/{userId}"})
+    public ResponseEntity<Response> updateUserByAdmin(@PathVariable("userId") String userId, @RequestBody UserRequest userRequest, HttpServletRequest request) {
+        var user = userService.updateUserByAdmin(userId, userRequest.getFirstName(), userRequest.getLastName(), userRequest.getEmail(), userRequest.getPhone(), userRequest.getBio());
+        return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "User updated successfully.", OK));
+    }
+
+    @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @PatchMapping(path = {"/updateRole"})
     public ResponseEntity<Response> updateRole(@AuthenticationPrincipal User userPrincipal, @RequestBody RoleRequest roleRequest, HttpServletRequest request) {
         userService.updateRole( userPrincipal.getUserId(), roleRequest.getRole());
@@ -187,7 +195,7 @@ public class UserResource {
         return ResponseEntity.ok().body(getResponse(request, Map.of("users", userService.getUsers()), "Users retrieved", OK));
     }
 
-    @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
     @PatchMapping(path = {"/photo"})
     public ResponseEntity<Response> uploadPhoto(@AuthenticationPrincipal User userPrincipal, @RequestParam("file") MultipartFile file, HttpServletRequest request) {
         var imageUrl = userService.uploadPhoto(userPrincipal.getUserId(), file);

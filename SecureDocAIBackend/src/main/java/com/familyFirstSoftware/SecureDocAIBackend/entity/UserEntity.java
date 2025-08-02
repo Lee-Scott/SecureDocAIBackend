@@ -2,18 +2,8 @@ package com.familyFirstSoftware.SecureDocAIBackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -31,11 +21,17 @@ import static jakarta.persistence.FetchType.EAGER;
 @Table(name = "users")
 @JsonInclude(NON_DEFAULT)
 public class UserEntity extends Auditable {
-    @Column(updatable = false, unique = true, nullable = false)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
     private String firstName;
     private String lastName;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
     private Integer loginAttempts;
     private LocalDateTime lastLogin;
