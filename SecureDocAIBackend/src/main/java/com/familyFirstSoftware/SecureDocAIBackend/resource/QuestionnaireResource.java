@@ -45,7 +45,7 @@ public class QuestionnaireResource {
      * GET /api/questionnaires - Get Questionnaires List
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getQuestionnaires(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -77,7 +77,7 @@ public class QuestionnaireResource {
      * GET /api/questionnaires/{id} - Get Questionnaire Details
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getQuestionnaireById(@PathVariable String id, HttpServletRequest request) {
         log.info("Fetching questionnaire details for ID: {}", id);
         Questionnaire questionnaire = questionnaireService.getQuestionnaireById(id);
@@ -89,7 +89,7 @@ public class QuestionnaireResource {
      * POST /api/questionnaires - Create Questionnaire (Admin)
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> createQuestionnaire(@Valid @RequestBody Questionnaire questionnaire, HttpServletRequest request) {
         log.info("Creating new questionnaire: {}", questionnaire.getTitle());
 
@@ -105,7 +105,7 @@ public class QuestionnaireResource {
      * PATCH /api/questionnaires/{id} - Update Questionnaire (Admin)
      */
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> updateQuestionnaire(@PathVariable String id,
                                                        @RequestBody Questionnaire questionnaire,
                                                        HttpServletRequest request) {
@@ -120,7 +120,7 @@ public class QuestionnaireResource {
      * DELETE /api/questionnaires/{id} - Delete Questionnaire (Admin)
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> deleteQuestionnaire(@PathVariable String id, HttpServletRequest request) {
         log.info("Deleting questionnaire: {}", id);
 
@@ -133,7 +133,7 @@ public class QuestionnaireResource {
      * POST /api/questionnaires/responses - Submit Response
      */
     @PostMapping("/responses")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> submitResponse(@Valid @RequestBody QuestionnaireResponse response,
                                                   Authentication authentication,
                                                   HttpServletRequest request) {
@@ -158,7 +158,7 @@ public class QuestionnaireResource {
      * GET /api/questionnaires/responses/my - Get User's Responses
      */
     @GetMapping("/responses/my")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getUserResponses(Authentication authentication, HttpServletRequest request) {
         User user = (User) authentication.getPrincipal();
         log.info("Fetching responses for user: {}", user.getUserId());
@@ -172,7 +172,7 @@ public class QuestionnaireResource {
      * GET /api/questionnaires/responses/{id} - Get Specific Response
      */
     @GetMapping("/responses/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getResponseById(@PathVariable String id, HttpServletRequest request) {
         log.info("Fetching response: {}", id);
 
@@ -185,7 +185,7 @@ public class QuestionnaireResource {
      * PATCH /api/questionnaires/responses/{id} - Update Response
      */
     @PatchMapping("/responses/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> updateResponse(@PathVariable String id,
                                                   @RequestBody QuestionnaireResponse response,
                                                   HttpServletRequest request) {
@@ -200,7 +200,7 @@ public class QuestionnaireResource {
      * GET /api/questionnaires/{id}/analytics - Get Analytics (Admin)
      */
     @GetMapping("/{id}/analytics")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getQuestionnaireAnalytics(@PathVariable String id, HttpServletRequest request) {
         log.info("Generating analytics for questionnaire: {}", id);
 
@@ -213,7 +213,7 @@ public class QuestionnaireResource {
      * GET /api/questionnaires/active - Get Active Questionnaires
      */
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getActiveQuestionnaires(HttpServletRequest request) {
         log.info("Fetching all active questionnaires");
 

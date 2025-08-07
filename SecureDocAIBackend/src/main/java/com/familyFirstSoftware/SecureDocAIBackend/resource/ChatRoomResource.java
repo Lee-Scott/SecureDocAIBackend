@@ -40,7 +40,7 @@ public class ChatRoomResource {
     private final ChatRoomService chatRoomService;
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> createChatRoom(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
         // Extract user IDs from nested objects
         Map<String, String> user1Map = (Map<String, String>) request.get("user1");
@@ -54,21 +54,21 @@ public class ChatRoomResource {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getAllChatRooms(HttpServletRequest request) {
         List<ChatRoomEntity> chatRooms = chatRoomService.getAllChatRooms();
         return ResponseEntity.ok().body(getResponse(request, Map.of("chatRooms", chatRooms), "Chat rooms retrieved successfully.", OK));
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getChatRoomsForUser(@PathVariable String userId, HttpServletRequest request) {
         List<ChatRoomEntity> chatRooms = chatRoomService.getChatRoomsForUser(userId);
         return ResponseEntity.ok().body(getResponse(request, Map.of("chatRooms", chatRooms), "User chat rooms retrieved successfully.", OK));
     }
 
     @GetMapping("/{chatRoomId}")
-    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getChatRoom(@PathVariable String chatRoomId, HttpServletRequest request) {
         Optional<ChatRoomEntity> chatRoom = chatRoomService.getChatRoomById(chatRoomId);
         if (chatRoom.isPresent()) {
@@ -79,7 +79,7 @@ public class ChatRoomResource {
     }
 
     @PostMapping("/{chatRoomId}/messages")
-    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> sendMessageToChatRoom(
             @PathVariable String chatRoomId,
             @RequestBody Map<String, Object> request,
@@ -95,9 +95,41 @@ public class ChatRoomResource {
     }
 
     @GetMapping("/{chatRoomId}/messages")
-    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getMessagesForChatRoom(@PathVariable String chatRoomId, HttpServletRequest request) {
         List<ChatMessage> messages = chatRoomService.getMessagesForChatRoom(chatRoomId);
         return ResponseEntity.ok().body(getResponse(request, Map.of("messages", messages), "Messages retrieved successfully.", OK));
+    }
+
+    @GetMapping("/user/healthcare-providers")
+    @PreAuthorize("hasAnyAuthority('user:read') or hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Response> getHealthcareProviders(HttpServletRequest request) {
+        List<User> providers = chatRoomService.getHealthcareProviders();
+        return ResponseEntity.ok().body(getResponse(request, Map.of("providers", providers), "Healthcare providers retrieved successfully.", OK));
+    }
+
+    @PostMapping("/with-provider")
+    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
+    public ResponseEntity<Response> createChatRoomWithProvider(
+            @RequestBody Map<String, Object> request,
+            @AuthenticationPrincipal User userPrincipal,
+            HttpServletRequest httpRequest
+    ) {
+        String providerId = (String) request.get("providerId");
+        ChatRoomEntity chatRoom = chatRoomService.createChatRoom(userPrincipal.getUserId(), providerId);
+        return ResponseEntity.status(CREATED).body(getResponse(httpRequest, Map.of("chatRoom", chatRoom), "Chat room with provider created successfully.", CREATED));
+    }
+
+    @PostMapping("/{chatRoomId}/share-results")
+    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
+    public ResponseEntity<Response> shareQuestionnaireResults(
+            @PathVariable String chatRoomId,
+            @RequestBody Map<String, Object> request,
+            @AuthenticationPrincipal User userPrincipal,
+            HttpServletRequest httpRequest
+    ) {
+        String questionnaireId = (String) request.get("questionnaireId");
+        chatRoomService.shareQuestionnaireResults(chatRoomId, userPrincipal.getUserId(), questionnaireId);
+        return ResponseEntity.ok().body(getResponse(httpRequest, null, "Questionnaire results shared successfully.", OK));
     }
 }

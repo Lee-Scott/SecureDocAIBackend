@@ -48,17 +48,17 @@ public class DocumentResource {
 
     private final UserService userService;
 
-    @PreAuthorize("hasAnyAuthority('document:create') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('document:create') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @PostMapping("/upload")
-    //@PreAuthorize("hasAnyAuthority('document:create') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    //@PreAuthorize("hasAnyAuthority('document:create') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> saveDocuments(@AuthenticationPrincipal User user, @RequestParam("files") List<MultipartFile> documents, HttpServletRequest request) {
         var newDocuments = documentService.saveDocuments(user.getUserId(), documents);
         return ResponseEntity.created(create("")).body(getResponse(request, of("documents", newDocuments), "Document(s) uploaded", CREATED));
     }
 
-    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @GetMapping
-    //@PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    //@PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getDocuments(@AuthenticationPrincipal User user, HttpServletRequest request,
                                                     @RequestParam(value = "page", defaultValue = "0") int page,
                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
@@ -66,7 +66,7 @@ public class DocumentResource {
         return ResponseEntity.ok(getResponse(request, of("documents", documents), "Document(s) retrieved", OK));
     }
 
-    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<Response> searchDocuments(@AuthenticationPrincipal User user, HttpServletRequest request,
                                                     @RequestParam(value = "page", defaultValue = "0") int page,
@@ -76,21 +76,21 @@ public class DocumentResource {
         return ResponseEntity.ok(getResponse(request, of("documents", documents), "Document(s) retrieved", OK));
     }
 
-    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @GetMapping("/{documentId}")
     public ResponseEntity<Response> getDocument(@AuthenticationPrincipal User user, @PathVariable("documentId") String documentId, HttpServletRequest request) {
         var document = documentService.getDocumentByDocumentId(documentId);
         return ResponseEntity.ok(getResponse(request, of("document", document), "Document retrieved", OK));
     }
 
-    @PreAuthorize("hasAnyAuthority('document:update') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('document:update') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @PatchMapping
     public ResponseEntity<Response> updateDocument(@AuthenticationPrincipal User user, @RequestBody UpdateDocRequest document, HttpServletRequest request) {
         var updatedDocument = documentService.updateDocument(document.getDocumentId(), document.getName(), document.getDescription());
         return ResponseEntity.ok(getResponse(request, of("document", updatedDocument), "Document updated", OK));
     }
 
-    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @GetMapping("/download/{documentName}")
     public ResponseEntity<Resource> downloadDocument(@AuthenticationPrincipal User user, @PathVariable("documentName") String documentName) throws IOException {
         var resource = documentService.getResource(documentName);
@@ -102,7 +102,7 @@ public class DocumentResource {
                 .body(resource);
     }
 
-    @PreAuthorize("hasAnyAuthority('document:delete') or hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('document:delete') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @DeleteMapping("/delete/{documentId}")
     public ResponseEntity<Response> deleteDocument(@AuthenticationPrincipal User user,
                                                    @PathVariable("documentId") String documentId,

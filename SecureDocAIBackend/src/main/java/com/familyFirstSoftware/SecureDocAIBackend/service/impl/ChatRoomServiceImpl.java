@@ -109,6 +109,31 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return entities.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
+    public List<User> getHealthcareProviders() {
+        return userRepository.findAllByRole("HEALTHCARE_PROVIDER")
+                .stream()
+                .map(DtoMapper::toUserDto)
+                .collect(Collectors.toList());
+    }
+
+    public void shareQuestionnaireResults(String chatRoomId, String senderId, String questionnaireId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findByChatRoomId(chatRoomId)
+                .orElseThrow(() -> new ApiException("Chat room not found"));
+
+        UserEntity sender = getUserEntityByUserId(senderId);
+
+        // Logic to share questionnaire results (e.g., save a message in the chat room)
+        ChatMessageEntity message = new ChatMessageEntity();
+        message.setChatRoom(chatRoom);
+        message.setSender(sender);
+        message.setContent("Questionnaire results shared: " + questionnaireId);
+        message.setMessageType(MessageType.SYSTEM);
+        message.setIsRead(false);
+        message.setCreatedAt(LocalDateTime.now());
+
+        chatMessageRepository.save(message);
+    }
+
     private ChatMessage convertToDto(ChatMessageEntity entity) {
         return ChatMessage.builder()
                 .id(entity.getId())
