@@ -131,7 +131,8 @@ public class Constants {
     // ===== QUESTIONNAIRE QUERIES =====
     public static final String QUESTIONNAIRE_FIND_WITH_FILTERS_QUERY =
             "SELECT q FROM QuestionnaireEntity q WHERE q.isActive = true AND " +
-            "(:category IS NULL OR q.category = :category)";
+            "(:category IS NULL OR q.category = :category) AND " +
+            "(:title IS NULL OR q.titleSearch LIKE CONCAT('%', :title, '%'))";
 
     public static final String QUESTIONNAIRE_COUNT_BY_CREATED_BY_QUERY =
             "SELECT COUNT(q) FROM QuestionnaireEntity q WHERE q.createdBy = :userId";

@@ -121,6 +121,46 @@ class QuestionnaireRepositoryTest {
         }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
+    @Test
+    @DisplayName("findQuestionnairesWithFilters with title returns filtered results")
+    void findQuestionnairesWithFilters_WithTitle_ShouldReturnFilteredResults() {
+        // Arrange
+        PageRequest pageable = PageRequest.of(0, 5, Sort.by("title"));
+
+        // Act: Search with a partial, case-insensitive title
+        Page<QuestionnaireEntity> resultPage = questionnaireRepository.findQuestionnairesWithFilters(
+                null, "health", pageable);
+
+        // Assert
+        assertThat(resultPage).isNotNull();
+        assertThat(resultPage.getTotalElements()).isEqualTo(1);
+        assertThat(resultPage.getContent().get(0).getTitle()).isEqualTo("Health Survey");
+    }
+
+    @Test
+    @DisplayName("findQuestionnairesWithFilters with category and title returns filtered results")
+    void findQuestionnairesWithFilters_WithCategoryAndTitle_ShouldReturnFilteredResults() {
+        // Arrange
+        PageRequest pageable = PageRequest.of(0, 5, Sort.by("title"));
+
+        // Act: Search with both category and a partial title
+        Page<QuestionnaireEntity> resultPage = questionnaireRepository.findQuestionnairesWithFilters(
+                QuestionnaireCategory.HEALTHCARE, "survey", pageable);
+
+        // Assert
+        assertThat(resultPage).isNotNull();
+        assertThat(resultPage.getTotalElements()).isEqualTo(1);
+        assertThat(resultPage.getContent().get(0).getTitle()).isEqualTo("Health Survey");
+
+        // Act: Search with a mismatched category and title
+        Page<QuestionnaireEntity> emptyResultPage = questionnaireRepository.findQuestionnairesWithFilters(
+                QuestionnaireCategory.BUSINESS, "Health", pageable);
+
+        // Assert
+        assertThat(emptyResultPage).isNotNull();
+        assertThat(emptyResultPage.getTotalElements()).isZero();
+    }
+
     // Helper method to create and persist a questionnaire entity
     private QuestionnaireEntity createQuestionnaire(String title, QuestionnaireCategory category, boolean isActive) {
         QuestionnaireEntity entity = new QuestionnaireEntity();

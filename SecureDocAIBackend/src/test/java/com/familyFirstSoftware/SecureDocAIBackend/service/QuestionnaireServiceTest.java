@@ -186,7 +186,7 @@ class QuestionnaireServiceTest {
                     .id(id)
                     .title(title)
                     .description("A sample description.")
-                    .category("GENERAL")
+                    .category("OTHER")
                     .isActive(true)
                     .estimatedTimeMinutes(15)
                     .build();

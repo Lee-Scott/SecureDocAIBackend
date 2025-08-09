@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.data.domain.Page;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,8 +48,10 @@ public class QuestionnaireResourceTest {
         // Assert
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().data()).containsKey("questionnaire");
+        assertThat(responseEntity.getBody().data().containsKey("questionnaire")).isTrue();
         assertThat(responseEntity.getBody().data().get("questionnaire")).isEqualTo(mockQuestionnaire);
+
+        
         assertThat(responseEntity.getBody().message()).isEqualTo("Questionnaire retrieved successfully");
     }
 
@@ -64,5 +67,23 @@ public class QuestionnaireResourceTest {
         assertThatThrownBy(() -> questionnaireResource.getQuestionnaireById(questionnaireId, request))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Questionnaire not found");
+    }
+
+    @Test
+    @DisplayName("Test get questionnaires with filters - success")
+    void getQuestionnaires_WithFilters_Success() {
+        // Arrange
+        when(questionnaireService.getQuestionnaires(0, 10, "HEALTHCARE", "Survey"))
+                .thenReturn(Page.empty());
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        // Act
+        ResponseEntity<Response> responseEntity = questionnaireResource.getQuestionnaires(
+                0, 10, "HEALTHCARE", "Survey", request);
+
+        // Assert
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().data().containsKey("questionnaires")).isTrue();
     }
 }

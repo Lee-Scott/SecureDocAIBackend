@@ -21,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.PageImpl;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
         var entity = new QuestionnaireEntity();
         entity.setTitle(questionnaire.getTitle());
+        entity.setTitleSearch(questionnaire.getTitle() == null ? null : questionnaire.getTitle().toLowerCase());
         entity.setDescription(questionnaire.getDescription());
         entity.setCategory(QuestionnaireCategory.valueOf(questionnaire.getCategory()));
         entity.setIsActive(questionnaire.getIsActive() != null ? questionnaire.getIsActive() : true);
@@ -83,6 +86,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
         if (questionnaire.getTitle() != null) {
             entity.setTitle(questionnaire.getTitle());
+            entity.setTitleSearch(questionnaire.getTitle().toLowerCase());
         }
         if (questionnaire.getDescription() != null) {
             entity.setDescription(questionnaire.getDescription());
@@ -141,9 +145,14 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         }
 
         var pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        var entityPage = questionnaireRepository.findQuestionnairesWithFilters(categoryEnum, title, pageable);
+        String titleNormalized = (title == null || title.isEmpty()) ? null : title.toLowerCase();
+        var entityPage = questionnaireRepository.findQuestionnairesWithFilters(categoryEnum, titleNormalized, pageable);
 
-        return entityPage.map(dtoMapper::toDto);
+        var dtoList = entityPage.stream()
+                .map(dtoMapper::toDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, entityPage.getTotalElements());
     }
 
     @Override

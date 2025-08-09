@@ -207,6 +207,7 @@ public class UserServiceTest {
     @BeforeEach
     public void setup() {
         userEntity = UserEntity.builder()
+                .id(12345L)
                 .userId("12345")
                 .firstName("John")
                 .lastName("Doe")
@@ -226,12 +227,11 @@ public class UserServiceTest {
     @DisplayName("Test set up MFA")
     public void setUpMfaTest() {
         // Arrange
-        Long userId = Long.parseLong(userEntity.getUserId()); // Ensure correct ID conversion
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        when(credentialRepository.getCredentialByUserEntityId(userId)).thenReturn(Optional.of(new CredentialEntity()));
+        when(userRepository.findById(userEntity.getId())).thenReturn(Optional.of(userEntity));
+        when(credentialRepository.getCredentialByUserEntityId(userEntity.getId())).thenReturn(Optional.of(new CredentialEntity()));
 
         // Act
-        var result = userServiceImpl.setUpMfa(userId);
+        var result = userServiceImpl.setUpMfa(userEntity.getId());
 
         // Assert
         UserEntity resultUserEntity = UserUtils.toUserEntity(result, userEntity.getRole());
@@ -249,12 +249,12 @@ public class UserServiceTest {
         long userId = 1L;
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(credentialRepository.getCredentialByUserEntityId(userId)).thenReturn(Optional.of(new CredentialEntity()));
 
         // Act
         var result = userServiceImpl.cancelMfa(userId);
 
-        // Fake it till you make it!
-        userEntity.setMfa(false); // Just force it to pass
+        
 
         // Assert
         UserEntity resultUserEntity = UserUtils.toUserEntity(result, userEntity.getRole());
@@ -266,16 +266,29 @@ public class UserServiceTest {
     @DisplayName("Test verify QR code")
     public void verifyQrCodeTest() {
         // Arrange
-        var userEntity = new UserEntity();
-        userEntity.setQrCodeSecret("secret");
-        when(userRepository.findUserByUserId("1")).thenReturn(Optional.of(userEntity));
+        // Use the fully initialized user from setup
+        var secret = new dev.samstevens.totp.secret.DefaultSecretGenerator().generate();
+        var totp = new dev.samstevens.totp.qr.QrData.Builder()
+                .label(userEntity.getEmail())
+                .secret(secret)
+                .issuer("SecureDocAI")
+                .build();
+        var code = new dev.samstevens.totp.code.DefaultCodeGenerator().generate(secret,
+                System.currentTimeMillis() / 30000);
+
+        userEntity.setQrCodeSecret(secret);
+        userEntity.setRole(new RoleEntity("USER", Authority.USER)); // Ensure role is set
+
+        when(userRepository.findUserByUserId(userEntity.getUserId())).thenReturn(Optional.of(userEntity));
+        when(credentialRepository.getCredentialByUserEntityId(userEntity.getId())).thenReturn(Optional.of(new CredentialEntity()));
 
         // Act
-        var result = userServiceImpl.verifyQrCode("1", "123456");
+        var result = userServiceImpl.verifyQrCode(userEntity.getUserId(), code);
 
         // Assert
         assertThat(result).isNotNull();
-        verify(userRepository, times(1)).findUserByUserId("1");
+        assertThat(result.isMfa()).isTrue(); // The user DTO should reflect that MFA is verified
+        verify(userRepository, times(1)).findUserByUserId(userEntity.getUserId());
     }
 
     @Test

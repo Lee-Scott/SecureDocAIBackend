@@ -28,6 +28,10 @@ public class QuestionnaireEntity extends Auditable {
     @Column(nullable = false)
     private String title;
 
+    // Lowercased, non-sensitive searchable copy of title for DB-side search
+    @Column(name = "title_search")
+    private String titleSearch;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
