@@ -145,7 +145,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         }
 
         var pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        String titleNormalized = (title == null || title.isEmpty()) ? null : title.toLowerCase();
+        String titleNormalized = (title == null || title.isEmpty()) ? null : "%" + title.toLowerCase() + "%";
         var entityPage = questionnaireRepository.findQuestionnairesWithFilters(categoryEnum, titleNormalized, pageable);
 
         var dtoList = entityPage.stream()

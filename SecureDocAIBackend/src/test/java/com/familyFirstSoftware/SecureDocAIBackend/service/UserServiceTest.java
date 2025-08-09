@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -264,7 +265,7 @@ public class UserServiceTest {
 
     @Test
     @DisplayName("Test verify QR code")
-    public void verifyQrCodeTest() {
+    public void verifyQrCodeTest() throws CodeGenerationException {
         // Arrange
         // Use the fully initialized user from setup
         var secret = new dev.samstevens.totp.secret.DefaultSecretGenerator().generate();
