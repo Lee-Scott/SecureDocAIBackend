@@ -4,6 +4,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -23,4 +24,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findUserByUserId(String id);
     Optional<UserEntity> findByUserId(String id);
     Optional<UserEntity> findByReferenceId(String referenceId);
+
+    Collection<UserEntity> findAllByRole_Name(String roleName);
 }

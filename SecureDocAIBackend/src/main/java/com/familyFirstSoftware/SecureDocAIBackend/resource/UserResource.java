@@ -97,12 +97,23 @@ public class UserResource {
         return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "User updated successfully.", OK));
     }
 
-    @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('SUPER_ADMIN')")
     @PatchMapping(path = {"/updateRole"})
     public ResponseEntity<Response> updateRole(@AuthenticationPrincipal User userPrincipal, @RequestBody RoleRequest roleRequest, HttpServletRequest request) {
-        userService.updateRole( userPrincipal.getUserId(), roleRequest.getRole());
+        userService.updateRole(userPrincipal.getUserId(), roleRequest.getRole());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Role updated successfully.", OK));
     }
+
+        @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
+        @PatchMapping(path = {"/updateRole/{userId}"})
+        public ResponseEntity<Response> updateRoleByAdmin(
+                @PathVariable("userId") String userId,
+                @RequestBody RoleRequest roleRequest,
+                HttpServletRequest request) {
+            userService.updateRole(userId, roleRequest.getRole());
+            return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Role updated successfully.", OK));
+        }
+
     @PreAuthorize("hasAnyAuthority('user:update') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @PatchMapping(path = {"/toggleAccountExpired"})
     public ResponseEntity<Response> toggleAccountExpired(@AuthenticationPrincipal User user, HttpServletRequest request) {
@@ -233,3 +244,4 @@ public class UserResource {
         return URI.create("");
     }
 }
+

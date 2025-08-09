@@ -44,6 +44,7 @@ public interface UserService {
     String uploadPhoto(String userId, MultipartFile file);
     User getUserById(Long id);
     List<User> getUsers();
+    List<User> getUsersByRole(String roleName);
 
     void deleteUserByUserId(String userId);
 }

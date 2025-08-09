@@ -514,6 +514,14 @@ public class UserServiceImpl implements UserService {
         log.info("User with ID {} has been deleted", userId);
     }
 
+    @Override
+    public List<User> getUsersByRole(String roleName) {
+        return userRepository.findAllByRole_Name(roleName)
+                .stream()
+                .map(userEntity -> UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId())))
+                .collect(toList());
+    }
+
 
 }
 

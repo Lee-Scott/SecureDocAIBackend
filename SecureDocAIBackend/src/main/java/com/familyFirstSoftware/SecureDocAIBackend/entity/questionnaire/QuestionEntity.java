@@ -57,4 +57,7 @@ public class QuestionEntity extends Auditable {
     @OrderBy("orderIndex ASC")
     @JsonManagedReference
     private List<QuestionOptionEntity> options;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<QuestionResponseEntity> questionResponses;
 }

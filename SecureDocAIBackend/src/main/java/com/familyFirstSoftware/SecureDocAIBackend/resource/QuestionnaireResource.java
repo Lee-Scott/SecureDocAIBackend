@@ -4,7 +4,6 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.questionnaire.Questionnaire;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.questionnaire.QuestionnaireResponse;
-import com.familyFirstSoftware.SecureDocAIBackend.enumeration.questionnaire.QuestionnaireCategory;
 import com.familyFirstSoftware.SecureDocAIBackend.service.QuestionnaireService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -56,12 +55,7 @@ public class QuestionnaireResource {
         log.info("Fetching questionnaires - page: {}, size: {}, category: {}, title: {}",
                 page, size, category, title);
 
-        QuestionnaireCategory categoryEnum = null;
-        if (category != null && !category.isEmpty()) {
-            categoryEnum = QuestionnaireCategory.valueOf(category.toUpperCase());
-        }
-
-        Page<Questionnaire> questionnaires = questionnaireService.getQuestionnaires(page, size, categoryEnum, title);
+            Page<Questionnaire> questionnaires = questionnaireService.getQuestionnaires(page, size, category, title);
 
         Map<String, Object> data = Map.of(
                 "questionnaires", questionnaires.getContent(),
@@ -141,12 +135,7 @@ public class QuestionnaireResource {
 
         User user = (User) authentication.getPrincipal();
 
-        // Set the current user as the respondent if not already set
-        if (response.getUserId() == null) {
-            response.setUserId(user.getUserId());
-        }
-
-        QuestionnaireResponse submittedResponse = questionnaireService.submitResponse(response);
+        QuestionnaireResponse submittedResponse = questionnaireService.submitResponse(response, user);
         URI location = URI.create("/api/questionnaires/responses/" + submittedResponse.getId());
         Map<String, Object> data = Map.of("response", submittedResponse);
 

@@ -41,7 +41,7 @@ public class QuestionPageEntity extends Auditable {
     @Column(nullable = false)
     private Boolean isRequired = true;
 
-    @OneToMany(mappedBy = "page", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "page", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("questionNumber ASC")
     @JsonManagedReference
     private List<QuestionEntity> questions;

@@ -126,12 +126,22 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Questionnaire> getQuestionnaires(int page, int size, QuestionnaireCategory category, String title) {
+    public Page<Questionnaire> getQuestionnaires(int page, int size, String category, String title) {
         log.debug("Fetching questionnaires - page: {}, size: {}, category: {}, title: {}",
-                 page, size, category, title);
+                page, size, category, title);
+
+        QuestionnaireCategory categoryEnum = null;
+        if (category != null && !category.isEmpty()) {
+            try {
+                categoryEnum = QuestionnaireCategory.valueOf(category.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid questionnaire category provided: {}", category);
+                // Optionally, you could throw an exception or simply proceed with a null category
+            }
+        }
 
         var pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        var entityPage = questionnaireRepository.findQuestionnairesWithFilters(category, title, pageable);
+        var entityPage = questionnaireRepository.findQuestionnairesWithFilters(categoryEnum, title, pageable);
 
         return entityPage.map(dtoMapper::toDto);
     }
@@ -148,14 +158,14 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     @Override
-    public QuestionnaireResponse submitResponse(QuestionnaireResponse response) {
-        log.info("Submitting questionnaire response for questionnaire: {}", response.getQuestionnaireId());
+    public QuestionnaireResponse submitResponse(QuestionnaireResponse response, com.familyFirstSoftware.SecureDocAIBackend.dto.User userDto) {
+        log.info("Submitting questionnaire response for questionnaire: {} by user: {}", response.getQuestionnaireId(), userDto.getUserId());
 
         var questionnaire = questionnaireRepository.findByReferenceId(response.getQuestionnaireId())
                 .orElseThrow(() -> new ApiException("Questionnaire not found with ID: " + response.getQuestionnaireId()));
 
-        var user = userRepository.findByUserId(response.getUserId())
-                .orElseThrow(() -> new ApiException("User not found with ID: " + response.getUserId()));
+        var user = userRepository.findByUserId(userDto.getUserId())
+                .orElseThrow(() -> new ApiException("User not found with ID: " + userDto.getUserId()));
 
         // Check if response already exists
         var existingResponse = responseRepository.findByQuestionnaireIdAndUserId(questionnaire.getId(), user.getId());
@@ -163,12 +173,12 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         QuestionnaireResponseEntity responseEntity;
         if (existingResponse.isPresent()) {
             responseEntity = existingResponse.get();
-            log.info("Updating existing response for user: {}", response.getUserId());
+            log.info("Updating existing response for user: {}", userDto.getUserId());
         } else {
             responseEntity = new QuestionnaireResponseEntity();
             responseEntity.setQuestionnaire(questionnaire);
             responseEntity.setUser(user);
-            log.info("Creating new response for user: {}", response.getUserId());
+            log.info("Creating new response for user: {}", userDto.getUserId());
         }
 
         responseEntity.setIsCompleted(response.getIsCompleted() != null ? response.getIsCompleted() : false);
@@ -329,8 +339,8 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                 questionResponseRepository.save(questionResponse);
 
                 log.debug("Saved response for question {}: {}",
-                         responseDto.getQuestionId(),
-                         responseDto.getIsSkipped() ? "SKIPPED" : responseDto.getAnswerValue());
+                        responseDto.getQuestionId(),
+                        responseDto.getIsSkipped() ? "SKIPPED" : responseDto.getAnswerValue());
 
             } catch (Exception e) {
                 log.error("Failed to save response for question {}: {}", responseDto.getQuestionId(), e.getMessage());

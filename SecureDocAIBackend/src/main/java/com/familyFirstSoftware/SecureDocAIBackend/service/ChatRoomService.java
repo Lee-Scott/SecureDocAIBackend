@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service;
 
+import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatMessage;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatMessageEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatRoomEntity;
@@ -30,4 +31,8 @@ public interface ChatRoomService {
     ChatMessageEntity sendMessage(String chatRoomId, String senderId, String content, MessageType messageType);
 
     List<ChatMessage> getMessagesForChatRoom(String chatRoomId);
+
+    List<User> getHealthcareProviders();
+
+    void shareQuestionnaireResults(String chatRoomId, String userId, String questionnaireId);
 }

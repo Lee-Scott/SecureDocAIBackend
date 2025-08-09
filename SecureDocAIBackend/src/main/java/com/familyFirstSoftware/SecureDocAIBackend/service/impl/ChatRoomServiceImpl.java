@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 
+import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatMessage;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatMessageEntity;
@@ -110,7 +111,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     public List<User> getHealthcareProviders() {
-        return userRepository.findAllByRole("HEALTHCARE_PROVIDER")
+        return userRepository.findAllByRole_Name("DOCTOR")
                 .stream()
                 .map(DtoMapper::toUserDto)
                 .collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service;
 
+import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.questionnaire.Questionnaire;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.questionnaire.QuestionnaireResponse;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.questionnaire.QuestionnaireCategory;
@@ -25,11 +26,11 @@ public interface QuestionnaireService {
 
     // Questionnaire retrieval
     Questionnaire getQuestionnaireById(String questionnaireId);
-    Page<Questionnaire> getQuestionnaires(int page, int size, QuestionnaireCategory category, String title);
+    Page<Questionnaire> getQuestionnaires(int page, int size, String category, String title);
     List<Questionnaire> getActiveQuestionnaires();
 
     // Response operations
-    QuestionnaireResponse submitResponse(QuestionnaireResponse response);
+    QuestionnaireResponse submitResponse(QuestionnaireResponse response, User user);
     QuestionnaireResponse updateResponse(String responseId, QuestionnaireResponse response);
     QuestionnaireResponse getResponseById(String responseId);
     List<QuestionnaireResponse> getUserResponses(String userId);
