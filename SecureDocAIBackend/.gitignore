@@ -1,34 +1,4 @@
-# IntelliJ IDEA project files
-.idea/
-*.iml
-*.iws
-*.ipr
 
-# Maven / Gradle build directories and dependencies
-target/
-build/
-*.jar
-*.war
-*.ear
-
-# Dependency directories
-node_modules/
-
-# Logs and temporary files
-*.log
-*.tmp
-*.swp
-*.bak
-
-# Eclipse project files (if applicable)
-*.classpath
-*.project
-.settings/
-
-# Local environment configuration (add your secure files here)
-application.properties
-application.yml
-env.properties
 *.env
 
 # IDE-specific files
