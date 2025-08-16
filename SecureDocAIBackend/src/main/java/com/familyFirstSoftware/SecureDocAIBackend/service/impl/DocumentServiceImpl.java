@@ -122,10 +122,11 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Resource getResource(String documentName) {
+    public Resource getResource(String documentId) {
         try {
-            var filePath = Paths.get(FILE_STORAGE).toAbsolutePath().normalize().resolve(documentName);
-            if(!Files.exists(filePath)) { throw new ApiException("Document not found"); }
+            var documentEntity = getDocumentEntity(documentId);
+            var filePath = Paths.get(FILE_STORAGE).toAbsolutePath().normalize().resolve(documentEntity.getName());
+            if(!Files.exists(filePath)) { throw new ApiException("Document not found on the server"); }
             return new UrlResource(filePath.toUri());
         } catch (Exception exception) {
             throw new ApiException("Unable to download document");

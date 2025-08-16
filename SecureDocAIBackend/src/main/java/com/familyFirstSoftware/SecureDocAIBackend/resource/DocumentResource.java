@@ -91,11 +91,11 @@ public class DocumentResource {
     }
 
     @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
-    @GetMapping("/download/{documentName}")
-    public ResponseEntity<Resource> downloadDocument(@AuthenticationPrincipal User user, @PathVariable("documentName") String documentName) throws IOException {
-        var resource = documentService.getResource(documentName);
+    @GetMapping("/{documentId}/download")
+    public ResponseEntity<Resource> downloadDocument(@AuthenticationPrincipal User user, @PathVariable("documentId") String documentId) throws IOException {
+        var resource = documentService.getResource(documentId);
         var httpHeaders = new HttpHeaders();
-        httpHeaders.add("File-Name", documentName);
+        httpHeaders.add("File-Name", documentId);
         httpHeaders.add(CONTENT_DISPOSITION, String.format("attachment;File-Name=%s", resource.getFilename()));
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(resource.getFile().toPath())))
                 .headers(httpHeaders)
@@ -112,4 +112,3 @@ public class DocumentResource {
     }
 
 }
-

@@ -128,9 +128,9 @@ public class QuestionnaireResource {
      */
     @PostMapping("/responses")
     @PreAuthorize("hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
-    public ResponseEntity<Response> submitResponse(@Valid @RequestBody QuestionnaireResponse response,
-                                                  Authentication authentication,
-                                                  HttpServletRequest request) {
+    public ResponseEntity<Response> createQuestionnaire (@Valid @RequestBody QuestionnaireResponse response,
+                                             Authentication authentication,
+                                             HttpServletRequest request) {
         log.info("Submitting questionnaire response for questionnaire: {}", response.getQuestionnaireId());
 
         User user = (User) authentication.getPrincipal();
