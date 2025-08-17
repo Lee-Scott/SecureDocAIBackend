@@ -10,18 +10,22 @@ import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.ChatMessageRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.ChatRoomRepository;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.UserRepository;
+import com.familyFirstSoftware.SecureDocAIBackend.service.ai.AiService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.ChatRoomService;
 import com.familyFirstSoftware.SecureDocAIBackend.utils.DtoMapper;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.AI_DOCTOR_EMAIL;
 
 /**
  * @author Lee Scott
@@ -41,6 +45,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
+
+    @Qualifier("geminiService")
+    private final AiService aiService;
 
     @Override
     public ChatRoomEntity createChatRoom(String user1Id, String user2Id) {
@@ -87,16 +94,52 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         // Find sender
         UserEntity sender = getUserEntityByUserId(senderId);
 
-        // Create message
-        ChatMessageEntity message = new ChatMessageEntity();
-        message.setChatRoom(chatRoom);
-        message.setSender(sender);
-        message.setContent(content);
-        message.setMessageType(messageType);
-        message.setIsRead(false);
-        message.setCreatedAt(LocalDateTime.now());
+        // Create and save the user's message
+        ChatMessageEntity userMessage = new ChatMessageEntity();
+        userMessage.setChatRoom(chatRoom);
+        userMessage.setSender(sender);
+        userMessage.setContent(content);
+        userMessage.setMessageType(messageType);
+        userMessage.setIsRead(false);
+        userMessage.setCreatedAt(LocalDateTime.now());
+        chatMessageRepository.save(userMessage);
 
-        return chatMessageRepository.save(message);
+        // Determine the recipient and check if it's the AI doctor
+        UserEntity recipient = chatRoom.getUser1().getUserId().equals(senderId) ? chatRoom.getUser2() : chatRoom.getUser1();
+        if (AI_DOCTOR_EMAIL.equals(recipient.getEmail())) {
+            triggerAiResponse(content, chatRoom, recipient);
+        }
+
+        return userMessage;
+    }
+
+    private void triggerAiResponse(String userContent, ChatRoomEntity chatRoom, UserEntity aiUser) {
+        try {
+            String aiContent = aiService.generateResponse(userContent);
+
+            // This runs when the AI response is received
+            ChatMessageEntity aiMessage = new ChatMessageEntity();
+            aiMessage.setChatRoom(chatRoom);
+            aiMessage.setSender(aiUser);
+            aiMessage.setContent(aiContent);
+            aiMessage.setMessageType(MessageType.TEXT);
+            aiMessage.setIsRead(false);
+            aiMessage.setCreatedAt(LocalDateTime.now());
+            chatMessageRepository.save(aiMessage);
+            log.info("Successfully saved AI response to chat room {}", chatRoom.getChatRoomId());
+
+        } catch (Exception e) {
+            log.error("Failed to get AI response for chat room {}", chatRoom.getChatRoomId(), e);
+            // Optionally, send an error message to the chat room
+            ChatMessageEntity errorMessage = new ChatMessageEntity();
+            errorMessage.setChatRoom(chatRoom);
+            errorMessage.setSender(aiUser);
+            errorMessage.setContent("I'm sorry, I encountered an error and couldn't process your request. Please try again later.");
+            errorMessage.setMessageType(MessageType.SYSTEM);
+            errorMessage.setIsRead(false);
+            errorMessage.setCreatedAt(LocalDateTime.now());
+            chatMessageRepository.save(errorMessage);
+        }
     }
 
     @Override

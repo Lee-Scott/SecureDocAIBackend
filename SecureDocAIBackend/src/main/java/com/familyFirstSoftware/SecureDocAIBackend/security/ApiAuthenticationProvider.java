@@ -46,17 +46,22 @@ public class ApiAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         var apiAuthentication = authenticationFunction.apply(authentication);
-        var user = userService.getUserByEmail(apiAuthentication.getEmail());
-        if(user != null) {
-            var userCredential = userService.getUserCredentialById(user.getId());
-            //if(userCredential.getUpdatedAt().minusDays(NINETY_DAYS).isAfter(now())) { throw new ApiException("Credentials are expired. Please reset your password"); }
-            //if(!user.isCredentialsNonExpired()) { throw new ApiException("Credentials are expired. Please reset your password"); }
-            var userPrincipal = new UserPrincipal(user, userCredential);
-            validAccount.accept(userPrincipal);
-            if(encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
-                return authenticated(user, userPrincipal.getAuthorities());
-            } else throw new BadCredentialsException("Email and/or password incorrect. Please try again");
-        } throw new ApiException("Unable to authenticate");
+        try {
+            var user = userService.getUserByEmail(apiAuthentication.getEmail());
+            if (user != null) {
+                var userCredential = userService.getUserCredentialById(user.getId());
+                var userPrincipal = new UserPrincipal(user, userCredential);
+                validAccount.accept(userPrincipal);
+                if (encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
+                    return authenticated(user, userPrincipal.getAuthorities());
+                } else {
+                    throw new BadCredentialsException("Email and/or password incorrect. Please try again");
+                }
+            }
+        } catch (ApiException exception) {
+            throw new BadCredentialsException("Email and/or password incorrect. Please try again");
+        }
+        throw new BadCredentialsException("Unable to authenticate. Please try again.");
     }
 
     @Override

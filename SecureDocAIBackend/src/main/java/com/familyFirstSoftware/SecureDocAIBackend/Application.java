@@ -5,6 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.util.Collections;
+
 /**
  * @author Lee Scott
  * @version 1.0
@@ -23,7 +25,9 @@ public class Application {
 
 	public static void main(String[] args) {
 
-		SpringApplication.run(Application.class, args);
+		SpringApplication app = new SpringApplication(Application.class);
+		app.setDefaultProperties(Collections.singletonMap("spring.profiles.active", "dev"));
+		app.run(args);
 	}
 
 	// Run once at startup to create default roles then never again

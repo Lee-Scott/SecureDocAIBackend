@@ -80,6 +80,3 @@ public class FilterChainConfiguration {
         return source;
     }
 }
-
-
-

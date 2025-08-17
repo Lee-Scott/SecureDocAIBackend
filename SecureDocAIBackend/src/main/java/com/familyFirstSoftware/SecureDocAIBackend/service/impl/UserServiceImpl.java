@@ -78,6 +78,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email));
+        userEntity.setEnabled(true); // ?? is this needed
+        userRepository.save(userEntity);
         var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password));
         credentialRepository.save(credentialEntity);
         var confirmationEntity = new ConfirmationEntity(userEntity);
@@ -211,8 +213,7 @@ public class UserServiceImpl implements UserService {
         if(confirmationEntity == null){
             throw new ApiException("Unable to find token");
         }
-        //var userEntity = confirmationEntity.getUserEntity(); TODO
-        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        var userEntity = confirmationEntity.getUserEntity();
 
         if(userEntity == null){
             throw new ApiException("Invalid key");
@@ -524,4 +525,3 @@ public class UserServiceImpl implements UserService {
 
 
 }
-

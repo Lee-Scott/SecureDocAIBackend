@@ -181,7 +181,7 @@ public class UserResource {
     }
 
     // Start - Reset password when NOT logged in -----------------------------------------------------------
-    @PostMapping(path = {"/resetPassword"})
+    @PostMapping(path = {"/resetpassword"})
     public ResponseEntity<Response> resetPassword(@RequestBody @Valid EmailRequest emailRequest, HttpServletRequest request) {
         userService.resetPassword(emailRequest.getEmail());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Email sent to reset password.", OK));
