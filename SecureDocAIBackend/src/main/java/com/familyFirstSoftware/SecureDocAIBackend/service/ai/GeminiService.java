@@ -16,10 +16,11 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Collections;
 
-import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.GEMINI_DOCTOR_PROMPT;
+import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 
 @Service
 public class GeminiService implements AiService {
+
     private final VertexAI vertexAI;
     private final String primaryModelName;
     private final String fallbackModelName;
@@ -32,8 +33,8 @@ public class GeminiService implements AiService {
             VertexAI vertexAI) throws IOException {
 
         this.vertexAI = vertexAI;
-        this.primaryModelName = "gemini-2.5-flash";
-        this.fallbackModelName = "gemini-2.5-flash-lite";
+        this.primaryModelName = GEMINI_2_5_FLASH;
+        this.fallbackModelName = GEMINI_2_5_FLASH_LITE;
 
         this.systemInstruction = Content.newBuilder()
                 .addParts(Part.newBuilder().setText(GEMINI_DOCTOR_PROMPT).build())

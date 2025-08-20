@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Application Smoke Test")
-class ApplicationSmokeTest {
+class SecureDocAiBackendApplicationTests {
 
     @LocalServerPort
     private int port;

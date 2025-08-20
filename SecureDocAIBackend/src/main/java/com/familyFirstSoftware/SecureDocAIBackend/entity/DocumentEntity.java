@@ -39,6 +39,8 @@ public class DocumentEntity extends Auditable {
     private String formattedSize;
     private String icon;
     private String extension;
+    private String mimeType;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "user_id",
@@ -47,4 +49,20 @@ public class DocumentEntity extends Auditable {
             //foreignKey = @ForeignKey(name = "fk_documents_owner", foreignKeyDefinition = "foreign key /* FK */ (user_id) references UserEntity", value = ConstraintMode.CONSTRAINT)
     )
     private UserEntity owner;
+    
+    /**
+     * Gets the full file path for this document
+     * @return The full file path
+     */
+    public String getFilePath() {
+        return this.uri != null ? this.uri : "";
+    }
+    
+    /**
+     * Gets the MIME type of the document
+     * @return The MIME type
+     */
+    public String getMimeType() {
+        return this.mimeType != null ? this.mimeType : "application/octet-stream";
+    }
 }

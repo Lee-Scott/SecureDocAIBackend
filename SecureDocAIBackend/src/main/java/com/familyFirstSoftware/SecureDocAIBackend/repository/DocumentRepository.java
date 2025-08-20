@@ -35,6 +35,14 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> 
     // specified location with String documentId
     @Query(value = DOCUMENT_SELECT_BY_ID_QUERY, nativeQuery = true)
     Optional<IDocument> findDocumentByDocumentId(String documentId);
+    
+    /**
+     * Checks if a document exists with the given documentId
+     * @param documentId The ID of the document to check
+     * @return true if a document with the given ID exists, false otherwise
+     */
+    @Query("SELECT COUNT(d) > 0 FROM DocumentEntity d WHERE d.documentId = :documentId")
+    boolean existsByDocumentId(@Param("documentId") String documentId);
 
     Optional<DocumentEntity> findByDocumentId(String documentId);
 

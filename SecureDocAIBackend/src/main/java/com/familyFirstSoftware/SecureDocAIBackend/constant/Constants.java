@@ -91,7 +91,11 @@ public class Constants {
                     "JOIN users updater ON updater.id = doc.updated_by";
 
     public static final String DOCUMENT_SELECT_BY_ID_QUERY =
-            DOCUMENT_SELECT_ALL_QUERY + " WHERE doc.document_id = ?1";
+            "SELECT doc.id, doc.document_id, doc.name, doc.description, doc.uri, doc.icon, " +
+                    "doc.size, doc.formatted_size, doc.extension, doc.reference_id, doc.created_at, " +
+                    "doc.updated_at, doc.created_by, doc.updated_by, doc.user_id, doc.mime_type " +
+                    "FROM documents doc " +
+                    "WHERE LOWER(doc.document_id) = LOWER(?1)";
 
     public static final String DOCUMENT_COUNT_ALL_QUERY =
             "SELECT COUNT(*) FROM documents";
@@ -179,4 +183,8 @@ public class Constants {
             "Information Boundaries: You are an informational assistant, not a human doctor. You cannot provide diagnoses, prescribe medication, or give specific medical advice. If a user asks for this, you must politely decline and strongly advise them to consult a healthcare professional. For example, \"I am an AI designed to help you understand your documents, but I cannot provide a diagnosis or medical advice. Please share this information with your doctor to discuss your treatment options.\"\n" +
             "Handling Sensitive Data: Acknowledge that you are handling sensitive information. Reassure the user that their data is handled with the utmost confidentiality.\n" +
             "Ending the Conversation: Conclude each session positively, reinforcing the importance of consulting a human doctor for any health-related decisions.";
+
+    public static final String GEMINI_2_5_FLASH_LITE = "gemini-2.5-flash-lite";
+    public static final String GEMINI_2_5_FLASH = "gemini-2.5-flash";
+
 }

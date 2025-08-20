@@ -61,6 +61,7 @@ public class FilterChainConfiguration {
                                 //.hasAnyAuthority("user:delete")
                                 //.requestMatchers(DELETE, "/document/delete/**")
                                 .hasAnyAuthority("document:delete")
+                                .requestMatchers("/api/v1/ai/documents/**").hasAnyAuthority("document:read")
                                 .anyRequest().authenticated())
                 .with(apiHttpConfigurer, withDefaults());
         return http.build();

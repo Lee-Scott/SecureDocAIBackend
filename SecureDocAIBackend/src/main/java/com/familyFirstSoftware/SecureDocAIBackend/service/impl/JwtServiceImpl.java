@@ -37,12 +37,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-
 import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.ACCESS;
 import static com.familyFirstSoftware.SecureDocAIBackend.enumeration.TokenType.REFRESH;
 import static io.jsonwebtoken.Header.JWT_TYPE;
-import static io.jsonwebtoken.Header.TYPE;
 import static java.time.Instant.now;
 import static java.util.Arrays.stream;
 import static java.util.Date.from;
@@ -91,9 +89,9 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
 
     private final Supplier<JwtBuilder> builder = () ->
             Jwts.builder()
-                    .header().add(Map.of(TYPE, JWT_TYPE))
-                    .and()
-                    .audience().add(FAMILY_FIRST_SOFTWARE)
+                    .header()
+                            .type(JWT_TYPE)
+                            .add("aud", FAMILY_FIRST_SOFTWARE)
                     .and()
                     .id(UUID.randomUUID().toString())
                     .issuedAt(from(now()))
@@ -110,7 +108,6 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                     .subject(user.getUserId())
                     .expiration(from(now().plusSeconds(getExpiration())))
                     .compact();
-
 
     private final TriConsumer<HttpServletResponse, User, TokenType> addCookie = (response, user, type) -> {
         switch (type) {
@@ -141,10 +138,17 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
         return claimsFunction.andThen(claims).apply(token);
     }
 
-    public Function<String, List<GrantedAuthority>> authorities = token ->
-            commaSeparatedStringToAuthorityList(new StringJoiner(AUTHORITY_DELIMITER)
-                    .add(claimsFunction.apply(token).get(AUTHORITIES, String.class))
-                    .add(ROLE_PREFIX + claimsFunction.apply(token).get(ROLE, String.class)).toString());
+    public Function<String, List<GrantedAuthority>> authorities = token -> {
+        Claims claims = claimsFunction.apply(token);
+        String authoritiesStr = claims.get(AUTHORITIES, String.class);
+        String role = claims.get(ROLE, String.class);
+        return commaSeparatedStringToAuthorityList(
+                new StringJoiner(AUTHORITY_DELIMITER)
+                        .add(authoritiesStr != null ? authoritiesStr : "")
+                        .add(ROLE_PREFIX + (role != null ? role : ""))
+                        .toString()
+        );
+    };
 
     @Override
     public String createToken(User user, Function<Token, String> tokenFunction) {

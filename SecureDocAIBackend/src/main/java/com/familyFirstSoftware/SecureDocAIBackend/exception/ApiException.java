@@ -15,5 +15,9 @@ public class ApiException extends RuntimeException {
     public ApiException() {
         super("An error occurred");
     }
+
+    public ApiException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
 
