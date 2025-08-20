@@ -45,6 +45,11 @@ public interface DocumentService {
     IDocument getDocumentByDocumentId(String documentId);
     
     /**
+     * Retrieves a document by its referenceId.
+     */
+    IDocument getDocumentByReferenceId(String referenceId);
+    
+    /**
      * Updates document metadata.
      */
     IDocument updateDocument(String documentId, String name, String description);

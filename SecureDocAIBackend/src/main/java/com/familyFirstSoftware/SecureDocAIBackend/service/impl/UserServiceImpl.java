@@ -14,6 +14,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.*;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
@@ -73,6 +74,8 @@ public class UserServiceImpl implements UserService {
 
     private final BCryptPasswordEncoder encoder;
     private final CacheStore<String, Integer> userCache;
+    @Qualifier("userByUserIdCache")
+    private final CacheStore<String, User> userByUserIdCache;
     private final ApplicationEventPublisher publisher;
 
     @Override
@@ -133,14 +136,28 @@ public class UserServiceImpl implements UserService {
             }
         }
         userRepository.save(userEntity);
+        // Invalidate cached DTO for this userId since account flags/lastLogin may change
+        evictUserCache(userEntity.getUserId());
     }
 
 
 
     @Override
     public User getUserByUserId(String userId) {
-        var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
-        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        // 1) Try cache first
+        User cached = userByUserIdCache.get(userId);
+        if (cached != null) {
+            return cached;
+        }
+
+        // 2) Load from DB with role
+        var userEntity = userRepository.findWithRoleByUserId(userId)
+                .orElseThrow(() -> new ApiException("User not found"));
+
+        // 3) Build DTO and cache briefly
+        User dto = UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        userByUserIdCache.put(userId, dto);
+        return dto;
     }
 
     @Override
@@ -163,6 +180,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setQrCodeSecret(codeSecret);
         userEntity.setMfa(true);
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
         return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
@@ -181,6 +199,7 @@ public class UserServiceImpl implements UserService {
         userCache.evict(userEntity.getEmail());
         // log.info("Cache invalidated for user: {}", userEntity.getEmail());
 
+        evictUserCache(userEntity.getUserId());
         return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
@@ -303,6 +322,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setPhone(phone);
         userEntity.setBio(bio);
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
         return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
@@ -348,6 +368,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setRole(getRoleName(role));
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -355,6 +376,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setAccountNonExpired(!userEntity.isAccountNonExpired());
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -362,6 +384,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setAccountNonLocked(!userEntity.isAccountNonLocked());
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -369,6 +392,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setEnabled(!userEntity.isEnabled());
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -382,6 +406,7 @@ public class UserServiceImpl implements UserService {
             credential.setUpdatedAt(LocalDateTime.from(Instant.EPOCH));   // jan 1 1970, any day older than 90 days will work
         }
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -390,10 +415,11 @@ public class UserServiceImpl implements UserService {
         var credential = getUserCredentialById(userEntity.getId());
         credential.setUpdatedAt(LocalDateTime.from(Instant.EPOCH));   // jan 1 1970, any day older than 90 days will work
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     public List<User> getUsers() {
-        return userRepository.findAll()
+        return userRepository.findAllByOrderByIdAsc()
                 .stream()
                 .filter(userEntity -> !SYSTEM_GMAIL.equalsIgnoreCase(userEntity.getEmail()))
                 .map(userEntity -> {
@@ -453,7 +479,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserEntity getUserEntityByUserId(String userId) {
-        var userByUserId = userRepository.findUserByUserId(userId);
+        var userByUserId = userRepository.findWithRoleByUserId(userId);
         return userByUserId.orElseThrow(() -> new ApiException("User not found"));
     }
 
@@ -463,7 +489,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserEntity getUserEntityByEmail(String email) {
-        var userByEmail = userRepository.findUserByEmailIgnoreCase(email);
+        var userByEmail = userRepository.findWithRoleByEmailIgnoreCase(email);
         return userByEmail.orElseThrow(() -> new ApiException("User not found"));
     }
 
@@ -473,6 +499,12 @@ public class UserServiceImpl implements UserService {
 
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null); // because it can be we are checking for null when called
+    }
+
+    private void evictUserCache(String userId) {
+        if (userId != null) {
+            userByUserIdCache.evict(userId);
+        }
     }
 
 

@@ -23,6 +23,13 @@ public class CacheConfig {
         return new CacheStore<>(900, TimeUnit.SECONDS);
     }
 
+    // Small per-request-ish cache for User DTOs looked up by userId
+    // Short TTL to avoid stale role/flags while reducing duplicate DB hits within bursts
+    @Bean(name = "userByUserIdCache")
+    public CacheStore<String, com.familyFirstSoftware.SecureDocAIBackend.dto.User> userByUserIdCache() {
+        return new CacheStore<>(60, TimeUnit.SECONDS);
+    }
+
     //TODO: this
     /*@Bean(name = "registrationCache")
     public CacheStore<String, Integer> registrationCache() {

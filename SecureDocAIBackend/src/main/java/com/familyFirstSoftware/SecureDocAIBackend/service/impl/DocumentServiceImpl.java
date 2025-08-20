@@ -110,11 +110,18 @@ public class DocumentServiceImpl implements DocumentService {
             // 6. Save the updated document
             DocumentEntity savedEntity = documentRepository.save(documentEntity);
             
-            // 7. Return the updated document
+            // 7. Return the updated document (deduplicate user lookups)
+            Long createdById = savedEntity.getCreatedBy();
+            Long updatedById = savedEntity.getUpdatedBy();
+            var createdByUser = userService.getUserById(createdById);
+            var updatedByUser = Objects.equals(createdById, updatedById)
+                    ? createdByUser
+                    : userService.getUserById(updatedById);
+
             return fromDocumentEntity(
                 savedEntity,
-                userService.getUserById(savedEntity.getCreatedBy()),
-                userService.getUserById(savedEntity.getUpdatedBy())
+                createdByUser,
+                updatedByUser
             );
             
         } catch (IOException e) {
@@ -182,11 +189,18 @@ public class DocumentServiceImpl implements DocumentService {
                     logger.debug("Saving file to: {}", targetLocation);
                     Files.copy(document.getInputStream(), targetLocation, REPLACE_EXISTING);
                     
-                    // Create response DTO
+                    // Create response DTO (deduplicate user lookups)
+                    Long createdById = savedDocument.getCreatedBy();
+                    Long updatedById = savedDocument.getUpdatedBy();
+                    var createdByUser = userService.getUserById(createdById);
+                    var updatedByUser = Objects.equals(createdById, updatedById)
+                            ? createdByUser
+                            : userService.getUserById(updatedById);
+
                     Document newDocument = fromDocumentEntity(
-                        savedDocument, 
-                        userService.getUserById(savedDocument.getCreatedBy()), 
-                        userService.getUserById(savedDocument.getUpdatedBy())
+                        savedDocument,
+                        createdByUser,
+                        updatedByUser
                     );
                     newDocuments.add(newDocument);
                     logger.info("Successfully saved document: {} (ID: {})", filename, savedDocument.getDocumentId());
@@ -258,22 +272,39 @@ public class DocumentServiceImpl implements DocumentService {
                 return documentOpt.get();
             } else {
                 logger.warn("No document found with ID: {}", documentId);
-                // Try to find if document exists with different case
+                // Fallback: try treating provided value as referenceId for compatibility
+                logger.info("Falling back to lookup by referenceId: {}", documentId);
+                Optional<IDocument> refDocOpt = documentRepository.findDocumentByReferenceId(documentId);
+                if (refDocOpt.isPresent()) {
+                    logger.info("Found document via referenceId fallback for value: {}", documentId);
+                    return refDocOpt.get();
+                }
+                // Try to find if document exists with different case (diagnostic only)
                 List<DocumentEntity> similarDocuments = documentRepository.findAll()
                     .stream()
-                    .filter(doc -> doc.getDocumentId().equalsIgnoreCase(documentId))
+                    .filter(doc -> doc.getDocumentId() != null && doc.getDocumentId().equalsIgnoreCase(documentId))
                     .collect(Collectors.toList());
-                
                 if (!similarDocuments.isEmpty()) {
-                    logger.warn("Found document with matching ID but different case. Requested: {}, Found: {}", 
+                    logger.warn("Found document with matching ID but different case. Requested: {}, Found: {}",
                         documentId, similarDocuments.get(0).getDocumentId());
                 }
-                
-                throw new ApiException("Document not found with ID: " + documentId);
+                throw new ApiException("Document not found with ID or referenceId: " + documentId);
             }
         } catch (Exception e) {
             logger.error("Error retrieving document with ID: " + documentId, e);
             throw new ApiException("Error retrieving document: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public IDocument getDocumentByReferenceId(String referenceId) {
+        logger.info("Looking up document with referenceId: {}", referenceId);
+        try {
+            return documentRepository.findDocumentByReferenceId(referenceId)
+                    .orElseThrow(() -> new ApiException("Document not found with referenceId: " + referenceId));
+        } catch (Exception e) {
+            logger.error("Error retrieving document with referenceId: " + referenceId, e);
+            throw new ApiException("Error retrieving document by referenceId: " + e.getMessage());
         }
     }
 

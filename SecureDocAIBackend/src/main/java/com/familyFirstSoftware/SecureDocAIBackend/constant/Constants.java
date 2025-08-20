@@ -97,6 +97,13 @@ public class Constants {
                     "FROM documents doc " +
                     "WHERE LOWER(doc.document_id) = LOWER(?1)";
 
+    public static final String DOCUMENT_SELECT_BY_REFERENCE_QUERY =
+            "SELECT doc.id, doc.document_id, doc.name, doc.description, doc.uri, doc.icon, " +
+                    "doc.size, doc.formatted_size, doc.extension, doc.reference_id, doc.created_at, " +
+                    "doc.updated_at, doc.created_by, doc.updated_by, doc.user_id, doc.mime_type " +
+                    "FROM documents doc " +
+                    "WHERE LOWER(doc.reference_id) = LOWER(?1)";
+
     public static final String DOCUMENT_COUNT_ALL_QUERY =
             "SELECT COUNT(*) FROM documents";
 

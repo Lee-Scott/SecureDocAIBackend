@@ -35,6 +35,10 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> 
     // specified location with String documentId
     @Query(value = DOCUMENT_SELECT_BY_ID_QUERY, nativeQuery = true)
     Optional<IDocument> findDocumentByDocumentId(String documentId);
+
+    // fetch by referenceId using native projection
+    @Query(value = DOCUMENT_SELECT_BY_REFERENCE_QUERY, nativeQuery = true)
+    Optional<IDocument> findDocumentByReferenceId(String referenceId);
     
     /**
      * Checks if a document exists with the given documentId
@@ -45,6 +49,7 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> 
     boolean existsByDocumentId(@Param("documentId") String documentId);
 
     Optional<DocumentEntity> findByDocumentId(String documentId);
+    Optional<DocumentEntity> findByReferenceId(String referenceId);
 
     boolean existsByCreatedBy(Long createdBy);
     boolean existsByUpdatedBy(Long updatedBy);

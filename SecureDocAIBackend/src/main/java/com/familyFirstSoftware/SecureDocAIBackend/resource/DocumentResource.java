@@ -129,6 +129,16 @@ public class DocumentResource {
         return ResponseEntity.ok(getResponse(request, of("document", document), "Document retrieved", OK));
     }
 
+    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
+    @GetMapping("/by-reference/{referenceId}")
+    public ResponseEntity<Response> getDocumentByReferenceId(
+            @AuthenticationPrincipal User user,
+            @PathVariable("referenceId") String referenceId,
+            HttpServletRequest request) {
+        var document = documentService.getDocumentByReferenceId(referenceId);
+        return ResponseEntity.ok(getResponse(request, of("document", document), "Document retrieved by referenceId", OK));
+    }
+
     @PreAuthorize("hasAnyAuthority('document:update') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @PatchMapping
     public ResponseEntity<Response> updateDocument(@AuthenticationPrincipal User user, @RequestBody UpdateDocRequest document, HttpServletRequest request) {
