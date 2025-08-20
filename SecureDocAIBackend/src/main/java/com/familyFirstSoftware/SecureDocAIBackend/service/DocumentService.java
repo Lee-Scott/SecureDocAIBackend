@@ -3,37 +3,56 @@ package com.familyFirstSoftware.SecureDocAIBackend.service;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.Document;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentVersionDto;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
+import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentLock;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 /**
- * @author Lee Scott
- * @version 1.0
- * @license FamilyFirstSoftware, LLC (<a href="https://www.FamilyFirstSoftware.com"> FFS, LLC</a>)
- * @email FamilyFirstSoftware@gmail.com
- * @since 3/19/2025
+ * Service interface for document management operations including CRUD, versioning,
+ * AI analysis, and document locking.
  */
-
 public interface DocumentService {
-    Page<IDocument> getDocuments(int page, int size);
-    Page<IDocument> getDocuments(int page, int size, String name);
-    Collection<Document> saveDocuments(String userId, List<MultipartFile> documents);
-    Document reattachDocument(String documentId, MultipartFile file);
-    IDocument updateDocument(String documentId, String name, String description);
-    void deleteDocument(String documentId);
-    IDocument getDocumentByDocumentId(String documentId);
-        /**
-     * Gets a document resource, optionally a specific version
-     * @param documentName The name of the document
-     * @param version The version to retrieve (optional)
-     * @return The resource representing the document
-     * @throws java.io.IOException if the resource cannot be read
+    
+    /**
+     * Retrieves paginated documents.
      */
+    Page<IDocument> getDocuments(int page, int size);
+
+    /**
+     * Retrieves paginated documents filtered by name.
+     */
+    Page<IDocument> getDocuments(int page, int size, String name);
+
+    /**
+     * Saves multiple documents for a user.
+     */
+    Collection<Document> saveDocuments(String userId, List<MultipartFile> documents);
+
+    /**
+     * Reattaches a new file to an existing document.
+     */
+    Document reattachDocument(String documentId, MultipartFile file);
+    
+    /**
+     * Retrieves a document by its unique identifier.
+     */
+    IDocument getDocumentByDocumentId(String documentId);
+    
+    /**
+     * Updates document metadata.
+     */
+    IDocument updateDocument(String documentId, String name, String description);
+    
+    /**
+     * Deletes a document and its associated files.
+     */
+    void deleteDocument(String documentId);
     Resource getResource(String documentName, String version) throws java.io.IOException;
 
     Object checkoutDocument(String documentId, String userId);
