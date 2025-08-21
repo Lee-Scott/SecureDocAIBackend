@@ -1,6 +1,3 @@
-
-*.env
-
 # IDE-specific files
 .vscode/
 *.idea/
@@ -11,23 +8,26 @@
 # Windows
 Thumbs.db
 
-# Gradle wrapper files (if you’re using Gradle)
-gradle-wrapper.jar
-gradle-wrapper.properties
-
-# Maven wrapper files (if you’re using Maven)
-mvnw
-mvnw.cmd
+# Maven wrapper (SHOULD be committed - do not ignore)
+# mvnw
+# mvnw.cmd
 
 # Spring Boot DevTools (temporary files)
 .spring-boot-devtools/
 
-
-# Ignore all local files
+# Environment files (keep secrets out of git)
 *.env
-*.yml
+*.env.*
 
-# Other common Spring Boot and Java project files to ignore
+# YAML: ignore by default, but allow GitHub workflows and docker compose
+*.yml
+*.yaml
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+!docker/compose.yml
+
+# Java/Maven build output
 target/
 *.log
 *.class
