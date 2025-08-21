@@ -14,6 +14,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.repository.*;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.familyFirstSoftware.SecureDocAIBackend.utils.UserUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
@@ -69,14 +70,19 @@ public class UserServiceImpl implements UserService {
     private final CredentialRepository credentialRepository;
     private final ConfirmationRepository confirmationRepository;
     private final DocumentRepository documentRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     private final BCryptPasswordEncoder encoder;
     private final CacheStore<String, Integer> userCache;
+    @Qualifier("userByUserIdCache")
+    private final CacheStore<String, User> userByUserIdCache;
     private final ApplicationEventPublisher publisher;
 
     @Override
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email));
+        userEntity.setEnabled(true); // ?? is this needed
+        userRepository.save(userEntity);
         var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password));
         credentialRepository.save(credentialEntity);
         var confirmationEntity = new ConfirmationEntity(userEntity);
@@ -130,14 +136,28 @@ public class UserServiceImpl implements UserService {
             }
         }
         userRepository.save(userEntity);
+        // Invalidate cached DTO for this userId since account flags/lastLogin may change
+        evictUserCache(userEntity.getUserId());
     }
 
 
 
     @Override
     public User getUserByUserId(String userId) {
-        var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
-        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        // 1) Try cache first
+        User cached = userByUserIdCache.get(userId);
+        if (cached != null) {
+            return cached;
+        }
+
+        // 2) Load from DB with role
+        var userEntity = userRepository.findWithRoleByUserId(userId)
+                .orElseThrow(() -> new ApiException("User not found"));
+
+        // 3) Build DTO and cache briefly
+        User dto = UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+        userByUserIdCache.put(userId, dto);
+        return dto;
     }
 
     @Override
@@ -160,6 +180,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setQrCodeSecret(codeSecret);
         userEntity.setMfa(true);
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
         return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
@@ -178,6 +199,7 @@ public class UserServiceImpl implements UserService {
         userCache.evict(userEntity.getEmail());
         // log.info("Cache invalidated for user: {}", userEntity.getEmail());
 
+        evictUserCache(userEntity.getUserId());
         return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
@@ -210,8 +232,7 @@ public class UserServiceImpl implements UserService {
         if(confirmationEntity == null){
             throw new ApiException("Unable to find token");
         }
-        //var userEntity = confirmationEntity.getUserEntity(); TODO
-        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        var userEntity = confirmationEntity.getUserEntity();
 
         if(userEntity == null){
             throw new ApiException("Invalid key");
@@ -270,9 +291,72 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio) {
         UserEntity userEntity = getUserEntityByUserId(userId);
+        log.info("Updating user: {} with email: {}, current email: {}", userId, email, userEntity.getEmail());
+
         userEntity.setFirstName(firstName);
         userEntity.setLastName(lastName);
-        userEntity.setEmail(email);
+
+        // Only validate email if it's actually being changed
+        if (email != null && !email.trim().isEmpty()) {
+            String normalizedEmail = email.toLowerCase().trim();
+            String currentEmail = userEntity.getEmail().toLowerCase().trim();
+
+            log.info("Normalized email: {}, Current email: {}, Are they equal? {}",
+                    normalizedEmail, currentEmail, normalizedEmail.equals(currentEmail));
+
+            // Only check for duplicates if the email is actually changing
+            if (!normalizedEmail.equals(currentEmail)) {
+                log.info("Email is changing, checking for duplicates...");
+                var existingUser = userRepository.findUserByEmailIgnoreCase(normalizedEmail);
+                if (existingUser.isPresent() && !existingUser.get().getId().equals(userEntity.getId())) {
+                    log.error("Duplicate email found for user ID: {} with email: {}", existingUser.get().getId(), normalizedEmail);
+                    throw new ApiException("Email '" + normalizedEmail + "' is already in use by another user.");
+                }
+                userEntity.setEmail(normalizedEmail);
+                log.info("Email updated successfully to: {}", normalizedEmail);
+            } else {
+                log.info("Email unchanged, skipping validation");
+            }
+        }
+
+        userEntity.setPhone(phone);
+        userEntity.setBio(bio);
+        userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
+        return UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+    @Override
+    public User updateUserByAdmin(String userId, String firstName, String lastName, String email, String phone, String bio) {
+        UserEntity userEntity = getUserEntityByUserId(userId);
+        log.info("Admin updating user: {} with email: {}, current email: {}", userId, email, userEntity.getEmail());
+
+        userEntity.setFirstName(firstName);
+        userEntity.setLastName(lastName);
+
+        // Only validate email if it's actually being changed
+        if (email != null && !email.trim().isEmpty()) {
+            String normalizedEmail = email.toLowerCase().trim();
+            String currentEmail = userEntity.getEmail().toLowerCase().trim();
+
+            log.info("Admin - Normalized email: {}, Current email: {}, Are they equal? {}",
+                    normalizedEmail, currentEmail, normalizedEmail.equals(currentEmail));
+
+            // Only check for duplicates if the email is actually changing
+            if (!normalizedEmail.equals(currentEmail)) {
+                log.info("Admin - Email is changing, checking for duplicates...");
+                var existingUser = userRepository.findUserByEmailIgnoreCase(normalizedEmail);
+                if (existingUser.isPresent() && !existingUser.get().getId().equals(userEntity.getId())) {
+                    log.error("Admin - Duplicate email found for user ID: {} with email: {}", existingUser.get().getId(), normalizedEmail);
+                    throw new ApiException("Email '" + normalizedEmail + "' is already in use by another user.");
+                }
+                userEntity.setEmail(normalizedEmail);
+                log.info("Admin - Email updated successfully to: {}", normalizedEmail);
+            } else {
+                log.info("Admin - Email unchanged, skipping validation");
+            }
+        }
+
         userEntity.setPhone(phone);
         userEntity.setBio(bio);
         userRepository.save(userEntity);
@@ -284,6 +368,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setRole(getRoleName(role));
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -291,6 +376,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setAccountNonExpired(!userEntity.isAccountNonExpired());
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -298,6 +384,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setAccountNonLocked(!userEntity.isAccountNonLocked());
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -305,6 +392,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntityByUserId(userId);
         userEntity.setEnabled(!userEntity.isEnabled());
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -318,6 +406,7 @@ public class UserServiceImpl implements UserService {
             credential.setUpdatedAt(LocalDateTime.from(Instant.EPOCH));   // jan 1 1970, any day older than 90 days will work
         }
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     @Override
@@ -326,10 +415,11 @@ public class UserServiceImpl implements UserService {
         var credential = getUserCredentialById(userEntity.getId());
         credential.setUpdatedAt(LocalDateTime.from(Instant.EPOCH));   // jan 1 1970, any day older than 90 days will work
         userRepository.save(userEntity);
+        evictUserCache(userEntity.getUserId());
     }
 
     public List<User> getUsers() {
-        return userRepository.findAll()
+        return userRepository.findAllByOrderByIdAsc()
                 .stream()
                 .filter(userEntity -> !SYSTEM_GMAIL.equalsIgnoreCase(userEntity.getEmail()))
                 .map(userEntity -> {
@@ -389,7 +479,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserEntity getUserEntityByUserId(String userId) {
-        var userByUserId = userRepository.findUserByUserId(userId);
+        var userByUserId = userRepository.findWithRoleByUserId(userId);
         return userByUserId.orElseThrow(() -> new ApiException("User not found"));
     }
 
@@ -399,7 +489,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserEntity getUserEntityByEmail(String email) {
-        var userByEmail = userRepository.findUserByEmailIgnoreCase(email);
+        var userByEmail = userRepository.findWithRoleByEmailIgnoreCase(email);
         return userByEmail.orElseThrow(() -> new ApiException("User not found"));
     }
 
@@ -409,6 +499,12 @@ public class UserServiceImpl implements UserService {
 
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null); // because it can be we are checking for null when called
+    }
+
+    private void evictUserCache(String userId) {
+        if (userId != null) {
+            userByUserIdCache.evict(userId);
+        }
     }
 
 
@@ -432,6 +528,12 @@ public class UserServiceImpl implements UserService {
             throw new ApiException("Cannot delete user: User is referenced in roles. Update role references first.");
         }
 
+        // Check if user is referenced in chat rooms
+        if (chatRoomRepository.existsByCreatedBy(userEntityId) ||
+                chatRoomRepository.existsByUpdatedBy(userEntityId)) {
+            throw new ApiException("Cannot delete user: User is referenced in chat rooms. Update chat room references first.");
+        }
+
         // For user_roles, we don't need a separate repository.
         // The relationship is managed through the UserEntity.role field with @JoinTable
 
@@ -443,6 +545,14 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(userEntity);
 
         log.info("User with ID {} has been deleted", userId);
+    }
+
+    @Override
+    public List<User> getUsersByRole(String roleName) {
+        return userRepository.findAllByRole_Name(roleName)
+                .stream()
+                .map(userEntity -> UserUtils.fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId())))
+                .collect(toList());
     }
 
 

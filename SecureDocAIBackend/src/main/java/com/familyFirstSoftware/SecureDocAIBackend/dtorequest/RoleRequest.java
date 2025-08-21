@@ -2,8 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.dtorequest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * @author Lee Scott
@@ -12,12 +11,10 @@ import lombok.Setter;
  * @email FamilyFirstSoftware@gmail.com
  * @since 3/8/2025
  */
-@Getter
-@Setter
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RoleRequest {
     @NotEmpty(message = "Role is required")
     private String role;
 
 }
-

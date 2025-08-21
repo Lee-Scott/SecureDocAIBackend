@@ -25,18 +25,31 @@ import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.*;
 
 @Repository
 public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> {
-    @Query(countQuery = SELECT_COUNT_DOCUMENTS_QUERY, value = SELECT_DOCUMENTS_QUERY, nativeQuery = true)
+    @Query(countQuery = DOCUMENT_COUNT_ALL_QUERY, value = DOCUMENT_SELECT_ALL_QUERY, nativeQuery = true)
     Page<IDocument> findDocuments(Pageable pageable);
 
     // @Param("documentName") passed in with: ~* :documentName
-    @Query(countQuery = SELECT_COUNT_DOCUMENTS_BY_NAME_QUERY, value = SELECT_DOCUMENTS_BY_NAME_QUERY, nativeQuery = true)
+    @Query(countQuery = DOCUMENT_COUNT_BY_NAME_QUERY, value = DOCUMENT_SELECT_BY_NAME_QUERY, nativeQuery = true)
     Page<IDocument> findDocumentsByName(@Param("documentName") String documentName, Pageable pageable);
 
     // specified location with String documentId
-    @Query(value = SELECT_DOCUMENT_QUERY, nativeQuery = true)
+    @Query(value = DOCUMENT_SELECT_BY_ID_QUERY, nativeQuery = true)
     Optional<IDocument> findDocumentByDocumentId(String documentId);
 
+    // fetch by referenceId using native projection
+    @Query(value = DOCUMENT_SELECT_BY_REFERENCE_QUERY, nativeQuery = true)
+    Optional<IDocument> findDocumentByReferenceId(String referenceId);
+    
+    /**
+     * Checks if a document exists with the given documentId
+     * @param documentId The ID of the document to check
+     * @return true if a document with the given ID exists, false otherwise
+     */
+    @Query("SELECT COUNT(d) > 0 FROM DocumentEntity d WHERE d.documentId = :documentId")
+    boolean existsByDocumentId(@Param("documentId") String documentId);
+
     Optional<DocumentEntity> findByDocumentId(String documentId);
+    Optional<DocumentEntity> findByReferenceId(String referenceId);
 
     boolean existsByCreatedBy(Long createdBy);
     boolean existsByUpdatedBy(Long updatedBy);

@@ -2,8 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.dtorequest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * @author Lee Scott
@@ -13,8 +12,7 @@ import lombok.Setter;
  * @since 2/21/2025
  */
 
-@Getter
-@Setter
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QrCodeRequest {
 
@@ -23,4 +21,3 @@ public class QrCodeRequest {
     @NotEmpty(message = "Qr Code is required")
     private String qrCode;
 }
-

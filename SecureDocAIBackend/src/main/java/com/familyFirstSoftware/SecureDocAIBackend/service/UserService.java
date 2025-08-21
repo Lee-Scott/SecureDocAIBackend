@@ -34,6 +34,7 @@ public interface UserService {
     void updatePassword(String userId, String newPassword, String confirmNewPassword);
     void updatePassword(String userId, String oldPassword, String newPassword, String confirmNewPassword);
     User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio);
+    User updateUserByAdmin(String userId, String firstName, String lastName, String email, String phone, String bio);
     void updateRole(String userId, String role);
     void toggleAccountExpired(String userId);
     void toggleAccountLocked(String userId);
@@ -43,7 +44,7 @@ public interface UserService {
     String uploadPhoto(String userId, MultipartFile file);
     User getUserById(Long id);
     List<User> getUsers();
+    List<User> getUsersByRole(String roleName);
 
     void deleteUserByUserId(String userId);
 }
-

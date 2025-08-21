@@ -1,63 +1,27 @@
-# IntelliJ IDEA project files
-.idea/
-*.iml
-*.iws
-*.ipr
-
-# Maven / Gradle build directories and dependencies
-target/
-build/
-*.jar
-*.war
-*.ear
-
-# Dependency directories
-node_modules/
-
-# Logs and temporary files
-*.log
-*.tmp
-*.swp
-*.bak
-
-# Eclipse project files (if applicable)
-*.classpath
-*.project
-.settings/
-
-# Local environment configuration (add your secure files here)
-application.properties
-application.yml
-env.properties
-*.env
-
-# IDE-specific files
+# IDE
 .vscode/
 *.idea/
 
-# MacOS
+# OS
 .DS_Store
-
-# Windows
 Thumbs.db
 
-# Gradle wrapper files (if you’re using Gradle)
-gradle-wrapper.jar
-gradle-wrapper.properties
-
-# Maven wrapper files (if you’re using Maven)
-mvnw
-mvnw.cmd
-
-# Spring Boot DevTools (temporary files)
+# Spring Boot DevTools
 .spring-boot-devtools/
 
-
-# Ignore all local files
+# Env files (keep secrets out of git)
 *.env
-*.yml
+*.env.*
 
-# Other common Spring Boot and Java project files to ignore
+# YAML: ignore most, but allow GitHub workflows and docker compose
+*.yml
+*.yaml
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+!docker/compose.yml
+
+# Build outputs
 target/
 *.log
 *.class

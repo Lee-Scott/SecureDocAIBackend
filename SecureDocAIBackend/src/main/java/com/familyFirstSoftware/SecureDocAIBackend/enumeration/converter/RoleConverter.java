@@ -19,26 +19,20 @@ public class RoleConverter implements AttributeConverter<Authority, String> {
 
     @Override
     public String convertToDatabaseColumn(Authority authority) {
-        if(authority == null){
+        if (authority == null) {
             return null;
         }
         return authority.getValue();
-
     }
 
-    /*
-     * @code: String the string for role like: "document:create,document:read,document:update,document:delete"
-     *
-     */
     @Override
     public Authority convertToEntityAttribute(String code) {
-        if(code == null){
+        if (code == null) {
             return null;
         }
         return Stream.of(Authority.values())
                 .filter(authority -> authority.getValue().equals(code))
                 .findFirst()
-                .orElseThrow(IllegalAccessError::new);
+                .orElse(null);
     }
 }
-

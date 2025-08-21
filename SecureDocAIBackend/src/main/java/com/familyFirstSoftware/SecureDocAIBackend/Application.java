@@ -1,16 +1,11 @@
 package com.familyFirstSoftware.SecureDocAIBackend;
 
-import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
-import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
-import com.familyFirstSoftware.SecureDocAIBackend.repository.RoleRepository;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
+
+import java.util.Collections;
 
 /**
  * @author Lee Scott
@@ -30,8 +25,12 @@ public class Application {
 
 	public static void main(String[] args) {
 
-		SpringApplication.run(Application.class, args);
+		SpringApplication app = new SpringApplication(Application.class);
+		app.setDefaultProperties(Collections.singletonMap("spring.profiles.active", "dev"));
+		app.run(args);
 	}
+
+	// Run once at startup to create default roles then never again
 
 	/*@Bean
 	CommandLineRunner commandLineRunner(RoleRepository roleRepository) {
@@ -41,21 +40,43 @@ public class Application {
 			// Set user context
 			RequestContext.setUserId(0L);
 
-			// Create and save roles
-			var userRole = new RoleEntity();
-			userRole.setName(Authority.USER.name());
-			userRole.setAuthorities(Authority.USER);
-			System.out.println("Saving role: " + userRole.getName());
+			// Only create roles if they don't exist
+			if (roleRepository.count() == 0) {
+				var userRole = new RoleEntity();
+				userRole.setName("USER");
+				userRole.setAuthorities(Authority.USER);
+				System.out.println("Saving role: " + userRole.getName());
 
-			var adminRole = new RoleEntity();
-			adminRole.setName(Authority.ADMIN.name());
-			adminRole.setAuthorities(Authority.ADMIN);
-			System.out.println("Saving role: " + adminRole.getName());
+				var adminRole = new RoleEntity();
+				adminRole.setName("ADMIN");
+				adminRole.setAuthorities(Authority.ADMIN);
+				System.out.println("Saving role: " + adminRole.getName());
 
-			roleRepository.save(userRole);
-			roleRepository.save(adminRole);
+				var superAdminRole = new RoleEntity();
+				superAdminRole.setName("SUPER_ADMIN");
+				superAdminRole.setAuthorities(Authority.SUPER_ADMIN);
+				System.out.println("Saving role: " + superAdminRole.getName());
 
-			System.out.println(">>> Finished CommandLineRunner.");
+				var managerRole = new RoleEntity();
+				managerRole.setName("MANAGER");
+				managerRole.setAuthorities(Authority.MANAGER);
+				System.out.println("Saving role: " + managerRole.getName());
+
+				var aiAgentRole = new RoleEntity();
+				aiAgentRole.setName("AI_AGENT");
+				aiAgentRole.setAuthorities(Authority.AI_AGENT);
+				System.out.println("Saving role: " + aiAgentRole.getName());
+
+				roleRepository.save(userRole);
+				roleRepository.save(adminRole);
+				roleRepository.save(superAdminRole);
+				roleRepository.save(managerRole);
+				roleRepository.save(aiAgentRole);
+
+				System.out.println(">>> Finished creating roles.");
+			} else {
+				System.out.println(">>> Roles already exist, skipping creation.");
+			}
 
 			RequestContext.start();
 		};

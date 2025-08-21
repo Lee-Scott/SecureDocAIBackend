@@ -3,8 +3,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.dtorequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * @author Lee Scott
@@ -16,8 +15,7 @@ import lombok.Setter;
  * Probably normally should be a record, but I did some other things in here
  */
 
-@Getter
-@Setter
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserRequest {
     @NotEmpty(message = "First name is required")
@@ -32,4 +30,3 @@ public class UserRequest {
     private String bio;
     private String phone;
 }
-

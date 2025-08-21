@@ -95,7 +95,6 @@ public class UserUtils {
         } catch (Exception e) {
             throw new ApiException("Unable to create QR code URI");
         }
-        ;
         return getDataUriForImage(imageData, generator.getImageMimeType());
     };
 
@@ -105,7 +104,6 @@ public class UserUtils {
         User user = new User();
         BeanUtils.copyProperties(userEntity, user);
         
-        // Add null checks for all LocalDateTime fields
         user.setLastLogin(userEntity.getLastLogin() != null ? userEntity.getLastLogin().toString() : null);
         user.setCredentialsNonExpired(isCredentialNonExpired(credentialEntity));
         user.setCreatedAt(userEntity.getCreatedAt() != null ? userEntity.getCreatedAt().toString() : null);
