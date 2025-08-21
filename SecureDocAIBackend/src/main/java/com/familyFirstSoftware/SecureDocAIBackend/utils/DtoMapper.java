@@ -4,6 +4,8 @@ import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatMessage;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatMessageEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatRoom;
+import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatRoomEntity;
 
 public class DtoMapper {
     public static User toUserDto(UserEntity entity) {
@@ -47,5 +49,21 @@ public class DtoMapper {
                 .isRead(entity.getIsRead())
                 .createdAt(entity.getCreatedAt())
                 .build();
+    }
+
+    public static ChatRoom toChatRoomDto(ChatRoomEntity entity) {
+        if (entity == null) return null;
+        ChatRoom dto = new ChatRoom();
+        dto.setId(entity.getId());
+        dto.setChatRoomId(entity.getChatRoomId());
+        dto.setReferenceId(entity.getReferenceId());
+        dto.setUser1(toUserDto(entity.getUser1()));
+        dto.setUser2(toUserDto(entity.getUser2()));
+        dto.setIsActive(entity.getIsActive());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+        dto.setCreatedBy(entity.getCreatedBy().toString());
+        dto.setUpdatedBy(entity.getUpdatedBy().toString());
+        return dto;
     }
 }

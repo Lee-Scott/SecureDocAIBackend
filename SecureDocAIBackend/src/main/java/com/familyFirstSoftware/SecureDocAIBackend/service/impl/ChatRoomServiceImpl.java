@@ -2,6 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatMessage;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatRoom;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatMessageEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatRoomEntity;
@@ -50,11 +51,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final AiService aiService;
 
     @Override
-    public ChatRoomEntity createChatRoom(String user1Id, String user2Id) {
+    public ChatRoom createChatRoom(String user1Id, String user2Id) {
         // Check if chat room already exists between these users
         Optional<ChatRoomEntity> existingRoom = chatRoomRepository.findChatRoomBetweenUsers(user1Id, user2Id);
         if (existingRoom.isPresent()) {
-            return existingRoom.get();
+            return DtoMapper.toChatRoomDto(existingRoom.get());
         }
 
         // Find users by their IDs
@@ -67,26 +68,33 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         chatRoom.setUser2(user2);
         chatRoom.setIsActive(true);
 
-        return chatRoomRepository.save(chatRoom);
+        return DtoMapper.toChatRoomDto(chatRoomRepository.save(chatRoom));
     }
 
     @Override
-    public List<ChatRoomEntity> getAllChatRooms() {
-        return chatRoomRepository.findAll();
+    public List<ChatRoom> getAllChatRooms() {
+        return chatRoomRepository.findAll()
+                .stream()
+                .map(DtoMapper::toChatRoomDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<ChatRoomEntity> getChatRoomsForUser(String userId) {
-        return chatRoomRepository.findActiveRoomsForUser(userId);
+    public List<ChatRoom> getChatRoomsForUser(String userId) {
+        return chatRoomRepository.findActiveRoomsForUser(userId)
+                .stream()
+                .map(DtoMapper::toChatRoomDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<ChatRoomEntity> getChatRoomById(String chatRoomId) {
-        return chatRoomRepository.findByChatRoomId(chatRoomId);
+    public Optional<ChatRoom> getChatRoomById(String chatRoomId) {
+        return chatRoomRepository.findByChatRoomId(chatRoomId)
+                .map(DtoMapper::toChatRoomDto);
     }
 
     @Override
-    public ChatMessageEntity sendMessage(String chatRoomId, String senderId, String content, MessageType messageType) {
+    public ChatMessage sendMessage(String chatRoomId, String senderId, String content, MessageType messageType) {
         // Find chat room
         ChatRoomEntity chatRoom = chatRoomRepository.findByChatRoomId(chatRoomId)
                 .orElseThrow(() -> new ApiException("Chat room not found"));
@@ -110,7 +118,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             triggerAiResponse(content, chatRoom, recipient);
         }
 
-        return userMessage;
+        return DtoMapper.toChatMessageDto(userMessage);
     }
 
     private void triggerAiResponse(String userContent, ChatRoomEntity chatRoom, UserEntity aiUser) {
@@ -150,7 +158,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         List<ChatMessageEntity> entities = chatMessageRepository.findMessagesByChatRoomId(chatRoomId);
 
-        return entities.stream().map(this::convertToDto).collect(Collectors.toList());
+        return entities.stream().map(DtoMapper::toChatMessageDto).collect(Collectors.toList());
     }
 
     public List<User> getHealthcareProviders() {
@@ -176,19 +184,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         message.setCreatedAt(LocalDateTime.now());
 
         chatMessageRepository.save(message);
-    }
-
-    private ChatMessage convertToDto(ChatMessageEntity entity) {
-        return ChatMessage.builder()
-                .id(entity.getId())
-                .messageId(entity.getMessageId())
-                .chatRoomId(entity.getChatRoom().getChatRoomId())
-                .sender(DtoMapper.toUserDto(entity.getSender()))
-                .content(entity.getContent())
-                .messageType(entity.getMessageType())
-                .isRead(entity.getIsRead())
-                .createdAt(entity.getCreatedAt())
-                .build();
     }
 
     private UserEntity getUserEntityByUserId(String userId) {

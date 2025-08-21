@@ -2,8 +2,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.service;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatMessage;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatMessageEntity;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatRoomEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatRoom;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.chat.MessageType;
 
 import java.util.List;
@@ -20,15 +19,15 @@ import java.util.Optional;
  */
 public interface ChatRoomService {
 
-    ChatRoomEntity createChatRoom(String user1Id, String user2Id);
+    ChatRoom createChatRoom(String user1Id, String user2Id);
 
-    List<ChatRoomEntity> getAllChatRooms();
+    List<ChatRoom> getAllChatRooms();
 
-    List<ChatRoomEntity> getChatRoomsForUser(String userId);
+    List<ChatRoom> getChatRoomsForUser(String userId);
 
-    Optional<ChatRoomEntity> getChatRoomById(String chatRoomId);
+    Optional<ChatRoom> getChatRoomById(String chatRoomId);
 
-    ChatMessageEntity sendMessage(String chatRoomId, String senderId, String content, MessageType messageType);
+    ChatMessage sendMessage(String chatRoomId, String senderId, String content, MessageType messageType);
 
     List<ChatMessage> getMessagesForChatRoom(String chatRoomId);
 

@@ -3,8 +3,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.resource;
 import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatMessage;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatMessageEntity;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatRoomEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatRoom;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.chat.MessageType;
 import com.familyFirstSoftware.SecureDocAIBackend.service.ChatRoomService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,28 +48,28 @@ public class ChatRoomResource {
         String user1Id = user1Map.get("userId");
         String user2Id = user2Map.get("userId");
 
-        ChatRoomEntity chatRoom = chatRoomService.createChatRoom(user1Id, user2Id);
+        ChatRoom chatRoom = chatRoomService.createChatRoom(user1Id, user2Id);
         return ResponseEntity.status(CREATED).body(getResponse(httpRequest, Map.of("chatRoom", chatRoom), "Chat room created successfully.", CREATED));
     }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getAllChatRooms(HttpServletRequest request) {
-        List<ChatRoomEntity> chatRooms = chatRoomService.getAllChatRooms();
+        List<ChatRoom> chatRooms = chatRoomService.getAllChatRooms();
         return ResponseEntity.ok().body(getResponse(request, Map.of("chatRooms", chatRooms), "Chat rooms retrieved successfully.", OK));
     }
 
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getChatRoomsForUser(@PathVariable String userId, HttpServletRequest request) {
-        List<ChatRoomEntity> chatRooms = chatRoomService.getChatRoomsForUser(userId);
+        List<ChatRoom> chatRooms = chatRoomService.getChatRoomsForUser(userId);
         return ResponseEntity.ok().body(getResponse(request, Map.of("chatRooms", chatRooms), "User chat rooms retrieved successfully.", OK));
     }
 
     @GetMapping("/{chatRoomId}")
     @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> getChatRoom(@PathVariable String chatRoomId, HttpServletRequest request) {
-        Optional<ChatRoomEntity> chatRoom = chatRoomService.getChatRoomById(chatRoomId);
+        Optional<ChatRoom> chatRoom = chatRoomService.getChatRoomById(chatRoomId);
         if (chatRoom.isPresent()) {
             return ResponseEntity.ok().body(getResponse(request, Map.of("chatRoom", chatRoom.get()), "Chat room retrieved successfully.", OK));
         } else {
@@ -90,7 +89,7 @@ public class ChatRoomResource {
         String messageTypeStr = (String) request.getOrDefault("messageType", "TEXT");
         MessageType messageType = MessageType.valueOf(messageTypeStr);
 
-        ChatMessageEntity message = chatRoomService.sendMessage(chatRoomId, userPrincipal.getUserId(), content, messageType);
+        ChatMessage message = chatRoomService.sendMessage(chatRoomId, userPrincipal.getUserId(), content, messageType);
         return ResponseEntity.ok().body(getResponse(httpRequest, Map.of("message", message), "Message sent successfully.", OK));
     }
 
@@ -116,7 +115,7 @@ public class ChatRoomResource {
             HttpServletRequest httpRequest
     ) {
         String providerId = (String) request.get("providerId");
-        ChatRoomEntity chatRoom = chatRoomService.createChatRoom(userPrincipal.getUserId(), providerId);
+        ChatRoom chatRoom = chatRoomService.createChatRoom(userPrincipal.getUserId(), providerId);
         return ResponseEntity.status(CREATED).body(getResponse(httpRequest, Map.of("chatRoom", chatRoom), "Chat room with provider created successfully.", CREATED));
     }
 
