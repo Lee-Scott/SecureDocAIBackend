@@ -3,8 +3,10 @@ version: '3.8'  # Add the version of your Docker Compose
 services:
   postgresdb:
     container_name: postgrescontainer
-    image: dpage/postgres:latest #17.2
+    image: postgres:15
     restart: always # if the computer restarts, restart the container
+    env_file:
+      - ../.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}  # lee is default value if POSTGRES_USER is not set
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -22,6 +24,8 @@ services:
     container_name: pgadmincontainer
     image: dpage/pgadmin4:latest  # Use the official pgAdmin image
     restart: always 
+    env_file:
+      - ../.env
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}

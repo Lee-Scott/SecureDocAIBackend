@@ -1,25 +1,19 @@
-# IDE-specific files
+# IDE
 .vscode/
 *.idea/
 
-# MacOS
+# OS
 .DS_Store
-
-# Windows
 Thumbs.db
 
-# Maven wrapper (SHOULD be committed - do not ignore)
-# mvnw
-# mvnw.cmd
-
-# Spring Boot DevTools (temporary files)
+# Spring Boot DevTools
 .spring-boot-devtools/
 
-# Environment files (keep secrets out of git)
+# Env files (keep secrets out of git)
 *.env
 *.env.*
 
-# YAML: ignore by default, but allow GitHub workflows and docker compose
+# YAML: ignore most, but allow GitHub workflows and docker compose
 *.yml
 *.yaml
 !.github/
@@ -27,7 +21,7 @@ Thumbs.db
 !.github/workflows/*.yml
 !docker/compose.yml
 
-# Java/Maven build output
+# Build outputs
 target/
 *.log
 *.class
