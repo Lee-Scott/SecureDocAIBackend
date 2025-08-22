@@ -26,3 +26,5 @@ target/
 *.log
 *.class
 *.jar
+application-prod.yml
+compose.yml
