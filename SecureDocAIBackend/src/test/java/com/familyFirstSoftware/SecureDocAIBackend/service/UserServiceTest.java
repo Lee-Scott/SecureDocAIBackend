@@ -1,10 +1,12 @@
 package com.familyFirstSoftware.SecureDocAIBackend.service;
 
 import com.familyFirstSoftware.SecureDocAIBackend.cache.CacheStore;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.ConfirmationEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.CredentialEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.RoleEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
+
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.Authority;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.LoginType;
 import com.familyFirstSoftware.SecureDocAIBackend.event.UserEvent;
@@ -58,6 +60,8 @@ public class UserServiceTest {
     private BCryptPasswordEncoder encoder;
     @Mock
     private CacheStore<String, Integer> userCache;
+    @Mock
+    private CacheStore<String, User> userByUserIdCache;
     @Mock
     private ApplicationEventPublisher publisher;
 
@@ -122,7 +126,7 @@ public class UserServiceTest {
         var userEntity = new UserEntity();
         var confirmationEntity = new ConfirmationEntity(userEntity);
         when(confirmationRepository.findByKey("key")).thenReturn(Optional.of(confirmationEntity));
-        when(userRepository.findUserByEmailIgnoreCase("john.doe@example.com")).thenReturn(Optional.of(userEntity));
+        when(userRepository.findWithRoleByEmailIgnoreCase("john.doe@example.com")).thenReturn(Optional.of(userEntity));
         userEntity.setEmail("john.doe@example.com");
 
         // Act
@@ -139,8 +143,7 @@ public class UserServiceTest {
         // Arrange
         var userEntity = new UserEntity();
         userEntity.setEmail("john.doe@example.com");
-        when(userRepository.findUserByEmailIgnoreCase("john.doe@example.com")).thenReturn(Optional.of(userEntity));
-        when(userCache.get("john.doe@example.com")).thenReturn(0);
+        when(userRepository.findWithRoleByEmailIgnoreCase("john.doe@example.com")).thenReturn(Optional.of(userEntity));
 
         // Act
         userServiceImpl.updateLoginAttempt("john.doe@example.com", LoginType.LOGIN_ATTEMPT);
@@ -167,7 +170,7 @@ public class UserServiceTest {
         CredentialEntity mockCredential = mock(CredentialEntity.class);
         when(mockCredential.getUpdatedAt()).thenReturn(LocalDateTime.now());
 
-        when(userRepository.findUserByUserId(userId.toString())).thenReturn(Optional.of(userEntity));
+        when(userRepository.findWithRoleByUserId(userId.toString())).thenReturn(Optional.of(userEntity));
         when(credentialRepository.getCredentialByUserEntityId(anyLong())).thenReturn(Optional.of(mockCredential));
 
         // Act

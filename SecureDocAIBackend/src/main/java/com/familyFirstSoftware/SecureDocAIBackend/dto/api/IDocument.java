@@ -17,8 +17,8 @@ public interface IDocument {
     Long getId();
     void setId(Long id);
     @JsonProperty("documentId")
-    String getDocument_Id();
-    void setDocument_Id(String documentId);
+    String getDocumentId();
+    void setDocumentId(String documentId);
     String getName();
     void setName(String name);
     String getDescription();
@@ -30,32 +30,32 @@ public interface IDocument {
     long getSize();
     void setSize(long size);
     @JsonProperty("formattedSize")
-    String getFormatted_Size();
-    void setFormatted_Size(String formattedSize);
+    String getFormattedSize();
+    void setFormattedSize(String formattedSize);
     String getExtension();
     void setExtension(String extension);
     @JsonProperty("referenceId")
-    String getReference_Id();
-    void setReference_Id(String referenceId);
+    String getReferenceId();
+    void setReferenceId(String referenceId);
     @JsonProperty("createdAt")
-    LocalDateTime getCreated_At();
-    void setCreated_At(LocalDateTime createdAt);
-    LocalDateTime getUpdated_At();
+    LocalDateTime getCreatedAt();
+    void setCreatedAt(LocalDateTime createdAt);
     @JsonProperty("updatedAt")
-    void setUpdated_At(LocalDateTime updatedAt);
+    LocalDateTime getUpdatedAt();
+    void setUpdatedAt(LocalDateTime updatedAt);
     @JsonProperty("ownerName")
-    String getOwner_Name();
-    void setOwner_Name(String ownerName);
+    String getOwnerName();
+    void setOwnerName(String ownerName);
     @JsonProperty("ownerEmail")
-    String getOwner_Email();
-    void setOwner_Email(String ownerEmail);
+    String getOwnerEmail();
+    void setOwnerEmail(String ownerEmail);
     @JsonProperty("ownerPhone")
-    String getOwner_Phone();
-    void setOwner_Phone(String ownerPhone);
+    String getOwnerPhone();
+    void setOwnerPhone(String ownerPhone);
     @JsonProperty("ownerLastLogin")
-    LocalDateTime getOwner_Last_Login();
-    void setOwner_Last_Login(LocalDateTime ownerLastLogin);
+    LocalDateTime getOwnerLastLogin();
+    void setOwnerLastLogin(LocalDateTime ownerLastLogin);
     @JsonProperty("updaterName")
-    String getUpdater_Name();
-    void setUpdater_Name(String updaterName);
+    String getUpdaterName();
+    void setUpdaterName(String updaterName);
 }

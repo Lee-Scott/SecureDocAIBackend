@@ -4,8 +4,9 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.Document;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentVersionDto;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
 import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.CheckoutRequest;
-import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.UpdateDocRequest;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.PatchDocRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.familyFirstSoftware.SecureDocAIBackend.service.DocumentService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
@@ -70,6 +71,21 @@ public class DocumentResource {
                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
         var documents = documentService.getDocuments(page, size);
         return ResponseEntity.ok(getResponse(request, of("documents", documents), "Document(s) retrieved", OK));
+    }
+
+    /**
+     * Aggregated document details for frontend convenience (document + versions + status + URLs).
+     */
+    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
+    @GetMapping("/{id}/details")
+    public ResponseEntity<Response> getDocumentDetails(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") String id,
+            HttpServletRequest request) {
+        String baseUrl = request.getScheme() + "://" + request.getServerName() +
+                ((request.getServerPort() == 80 || request.getServerPort() == 443) ? "" : (":" + request.getServerPort()));
+        var details = documentService.getDocumentDetails(id, baseUrl);
+        return ResponseEntity.ok(getResponse(request, of("details", details), "Document details retrieved", OK));
     }
 
     @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
@@ -139,10 +155,40 @@ public class DocumentResource {
         return ResponseEntity.ok(getResponse(request, of("document", document), "Document retrieved by referenceId", OK));
     }
 
+    /**
+     * Resolve by either documentId or referenceId and return the canonical document.
+     */
+    @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
+    @GetMapping("/resolve/{value}")
+    public ResponseEntity<Response> resolveDocument(
+            @AuthenticationPrincipal User user,
+            @PathVariable("value") String value,
+            HttpServletRequest request) {
+        try {
+            IDocument doc = documentService.resolveDocument(value);
+            return ResponseEntity.ok(getResponse(request, of("document", doc), "Document resolved", OK));
+        } catch (ApiException e) {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(getResponse(request, of("value", value), e.getMessage(), NOT_FOUND));
+        }
+    }
+
+    /**
+     * Lightweight existence check for a document id (or referenceId via fallback).
+     */
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping(value = "/{id}", method = RequestMethod.HEAD)
+    public ResponseEntity<Void> headDocument(@PathVariable("id") String id) {
+        return documentService.documentExists(id) ? ResponseEntity.ok().build() : ResponseEntity.status(NOT_FOUND).build();
+    }
+
     @PreAuthorize("hasAnyAuthority('document:update') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
-    @PatchMapping
-    public ResponseEntity<Response> updateDocument(@AuthenticationPrincipal User user, @RequestBody UpdateDocRequest document, HttpServletRequest request) {
-        var updatedDocument = documentService.updateDocument(document.getDocumentId(), document.getName(), document.getDescription());
+    @PatchMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> updateDocument(@AuthenticationPrincipal User user,
+                                                   @PathVariable("id") String id,
+                                                   @RequestBody PatchDocRequest document,
+                                                   HttpServletRequest request) {
+        var updatedDocument = documentService.patchDocument(id, document.getName(), document.getDescription());
         return ResponseEntity.ok(getResponse(request, of("document", updatedDocument), "Document updated", OK));
     }
 

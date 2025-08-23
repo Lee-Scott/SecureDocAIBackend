@@ -3,6 +3,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.service.impl;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.Document;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentVersionDto;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentDetailsDto;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentLock;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentVersion;
@@ -131,6 +132,49 @@ public class DocumentServiceImpl implements DocumentService {
             throw new ApiException(errorMsg);
         }
     }
+
+    @Override
+    public DocumentDetailsDto getDocumentDetails(String idOrReference, String baseUrl) {
+        // Resolve document (supports documentId with fallback to referenceId via existing logic)
+        IDocument doc = getDocumentByDocumentId(idOrReference);
+        String documentId = doc.getDocumentId();
+
+        // Gather versions and status
+        List<DocumentVersionDto> versions = getDocumentVersions(documentId);
+        Map<String, Object> status = getDocumentStatus(documentId);
+
+        // Build download URLs
+        String downloadUrl = baseUrl + "/documents/" + documentId + "/download";
+        Map<String, String> versionDownloadUrls = versions.stream().collect(
+                java.util.stream.Collectors.toMap(
+                        DocumentVersionDto::getVersionNumber,
+                        v -> baseUrl + "/documents/" + documentId + "/versions/" + v.getVersionNumber() + "/download"
+                )
+        );
+
+        return DocumentDetailsDto.builder()
+                .document(doc)
+                .versions(versions)
+                .status(status)
+                .downloadUrl(downloadUrl)
+                .versionDownloadUrls(versionDownloadUrls)
+                .build();
+    }
+
+    @Override
+    public IDocument resolveDocument(String idOrReference) {
+        return getDocumentByDocumentId(idOrReference);
+    }
+
+    @Override
+    public boolean documentExists(String idOrReference) {
+        try {
+            resolveDocument(idOrReference);
+            return true;
+        } catch (ApiException e) {
+            return false;
+        }
+    }
     
     @Override
     public Page<IDocument> getDocuments(int page, int size, String name) {
@@ -254,6 +298,41 @@ public class DocumentServiceImpl implements DocumentService {
         } catch (Exception exception) {
             log.error("Error updating document: {}", exception.getMessage(), exception);
             throw new ApiException("Unable to update document: " + exception.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public IDocument patchDocument(String documentId, String name, String description) {
+        try {
+            var documentEntity = getDocumentEntity(documentId);
+            boolean changed = false;
+
+            // Handle name change if provided and different
+            if (name != null && !name.equals(documentEntity.getName())) {
+                var currentPath = Paths.get(FILE_STORAGE).resolve(documentEntity.getName()).toAbsolutePath().normalize();
+                Path newPath = currentPath.resolveSibling(name);
+                Files.move(currentPath, newPath, REPLACE_EXISTING);
+                documentEntity.setName(name);
+                changed = true;
+            }
+
+            // Handle description change if provided and different
+            if (description != null && (documentEntity.getDescription() == null || !description.equals(documentEntity.getDescription()))) {
+                documentEntity.setDescription(description);
+                changed = true;
+            }
+
+            if (changed) {
+                // Create a new version snapshot before saving changes
+                createNewVersion(documentEntity, "Document partially updated", documentEntity.getUpdatedBy());
+                documentRepository.save(documentEntity);
+            }
+
+            return getDocumentByDocumentId(documentId);
+        } catch (Exception e) {
+            log.error("Error patching document: {}", e.getMessage(), e);
+            throw new ApiException("Unable to patch document: " + e.getMessage());
         }
     }
 
@@ -531,7 +610,14 @@ public class DocumentServiceImpl implements DocumentService {
     }
     
     private void createNewVersion(DocumentEntity document, String changeDescription, Long userId) throws IOException {
-        Path sourcePath = Paths.get(document.getFilePath());
+        // Resolve the source path robustly. document.getFilePath() may contain an HTTP URL; fallback to storage root + name
+        String filePathStr = document.getFilePath();
+        Path sourcePath;
+        if (filePathStr == null || filePathStr.isBlank() || filePathStr.startsWith("http://") || filePathStr.startsWith("https://")) {
+            sourcePath = Paths.get(FILE_STORAGE).toAbsolutePath().normalize().resolve(document.getName());
+        } else {
+            sourcePath = Paths.get(filePathStr);
+        }
         String versionDir = FILE_STORAGE + VERSIONS_DIR + "/" + document.getDocumentId() + "/";
         
         // Create versions directory if it doesn't exist
@@ -542,7 +628,8 @@ public class DocumentServiceImpl implements DocumentService {
         String versionNumber = "v" + versionCount;
         
         // Create versioned filename
-        String originalFilename = Paths.get(document.getFilePath()).getFileName().toString();
+        String originalFilename = sourcePath.getFileName().toString();
+
         String baseName = FilenameUtils.getBaseName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
         String versionedFilename = String.format("%s_%s.%s", baseName, versionNumber, extension);

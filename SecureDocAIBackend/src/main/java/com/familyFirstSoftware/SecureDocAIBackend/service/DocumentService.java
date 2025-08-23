@@ -3,6 +3,7 @@ package com.familyFirstSoftware.SecureDocAIBackend.service;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.Document;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentVersionDto;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentDetailsDto;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentLock;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -53,6 +54,11 @@ public interface DocumentService {
      * Updates document metadata.
      */
     IDocument updateDocument(String documentId, String name, String description);
+
+    /**
+     * Partially updates document metadata. Only non-null fields are applied.
+     */
+    IDocument patchDocument(String documentId, String name, String description);
     
     /**
      * Deletes a document and its associated files.
@@ -102,4 +108,20 @@ public interface DocumentService {
      * @return Map containing the review results for each document
      */
     Map<String, Object> reviewDocuments(String userId, List<MultipartFile> documents, String analysisType);
+
+    /**
+     * Aggregates document details including versions, status, and download URLs.
+     * Controller passes in the public baseUrl to compose absolute download links.
+     */
+    DocumentDetailsDto getDocumentDetails(String idOrReference, String baseUrl);
+
+    /**
+     * Resolves a document by documentId or referenceId and returns the canonical projection.
+     */
+    IDocument resolveDocument(String idOrReference);
+
+    /**
+     * Lightweight existence check by documentId or referenceId.
+     */
+    boolean documentExists(String idOrReference);
 }

@@ -80,14 +80,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(String firstName, String lastName, String email, String password) {
-        var userEntity = userRepository.save(createNewUser(firstName, lastName, email));
-        userEntity.setEnabled(true); // ?? is this needed
-        userRepository.save(userEntity);
-        var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password));
-        credentialRepository.save(credentialEntity);
-        var confirmationEntity = new ConfirmationEntity(userEntity);
-        confirmationRepository.save(confirmationEntity);
-        publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
+        var userEntity = createNewUser(firstName, lastName, email);
+        userEntity.setEnabled(true); // set flag prior to initial persist to avoid double save
+        // Ensure auditing has a user id for @PrePersist hooks
+        try {
+            RequestContext.setUserId(0L); // system action for initial creation
+            userRepository.save(userEntity);
+            var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password));
+            credentialRepository.save(credentialEntity);
+            var confirmationEntity = new ConfirmationEntity(userEntity);
+            confirmationRepository.save(confirmationEntity);
+            publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
+        } finally {
+            RequestContext.start(); // clear thread-local
+        }
     }
     private UserEntity createNewUser(String firstName, String lastName, String email) {
         var role = getRoleName(Authority.USER.name());
@@ -106,7 +112,13 @@ public class UserServiceImpl implements UserService {
         var confirmationEntity = getUserConfirmation(key);
         UserEntity userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
         userEntity.setEnabled(true);
-        userRepository.save(userEntity);
+        try {
+            // act as the user performing their own enablement
+            RequestContext.setUserId(userEntity.getId());
+            userRepository.save(userEntity);
+        } finally {
+            RequestContext.start();
+        }
         confirmationRepository.delete(confirmationEntity);
     }
 
