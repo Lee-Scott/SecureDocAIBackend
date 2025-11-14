@@ -1,30 +1,92 @@
-# IDE
-.vscode/
-*.idea/
+### IntelliJ ###
+.idea/
+*.iml
+out/
+*.ipr
+*.iws
 
-# OS
+# IntelliJ log & cache files
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+
+### Java ###
+target/
+build/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+debug.log
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Spring Boot DevTools
-.spring-boot-devtools/
+### Maven ###
+.mvn/wrapper/maven-wrapper.jar
 
-# Env files (keep secrets out of git)
-*.env
-*.env.*
+### Gradle ###
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
 
-# YAML: ignore most, but allow GitHub workflows and docker compose
-*.yml
-*.yaml
-!.github/
-!.github/workflows/
-!.github/workflows/*.yml
-!docker/compose.yml
+### Spring Boot ###
+# Application configs containing secrets
+application.properties
+application.yml
+application-local.properties
+application-local.yml
+bootstrap.yml
+bootstrap-local.yml
 
-# Build outputs
-target/
-*.log
+# Profiles
+application-*.properties
+application-*.yml
+
+### Docker ###
+# Docker env / secrets
+.env
+.env.*
+docker-compose.override.yml
+
+# Local-only volumes & build cache
+docker-data/
+docker-cache/
+*.pid
+
+### Node (if frontend bundled) ###
+node_modules/
+dist/
+build/
+
+### JUnit / Coverage ###
+*.exec
+*.ec
 *.class
-*.jar
-application-prod.yml
-compose.yml
+surefire-reports/
+test-output/
+coverage/
+
+### TLS / Keys ###
+*.pem
+*.key
+*.crt
+*.pfx
+*.jks
+*.keystore
+
+### Ignoring uploaded files (if any) ###
+uploads/
+storage/
+
+### Misc ###
+*.swp
+*.tmp
+*.bak
+*.old
