@@ -35,8 +35,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 4.  Security: Use `spring-security-test` annotations like @WithMockUser to simulate authenticated
  *     users and test authorization rules without a full security setup.
  */
+import org.springframework.test.context.ActiveProfiles;
+
 @WebMvcTest(QuestionnaireResource.class)
 @DisplayName("QuestionnaireResource Slice Tests")
+@ActiveProfiles("test")
 class QuestionnaireResourceSliceTest {
 
     @Autowired

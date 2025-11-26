@@ -4,6 +4,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.dto.Document;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentVersionDto;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentDetailsDto;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.PatchDocRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentLock;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentVersion;
@@ -782,5 +783,41 @@ public class DocumentServiceImpl implements DocumentService {
                     "expiresAt", newLock.getExpiresAt()
             );
         }
+    }
+
+    @Override
+    public Document updateDocument(String documentId, PatchDocRequest patchDocRequest) {
+        DocumentEntity documentEntity = documentRepository.findByDocumentId(documentId)
+                .orElseThrow(() -> new com.familyFirstSoftware.SecureDocAIBackend.exception.ResourceNotFoundException("Document", "id", documentId));
+
+        org.springframework.beans.BeanUtils.copyProperties(patchDocRequest, documentEntity, getNullPropertyNames(patchDocRequest));
+
+        DocumentEntity savedEntity = documentRepository.save(documentEntity);
+
+        Long createdById = savedEntity.getCreatedBy();
+        Long updatedById = savedEntity.getUpdatedBy();
+        var createdByUser = userService.getUserById(createdById);
+        var updatedByUser = Objects.equals(createdById, updatedById)
+                ? createdByUser
+                : userService.getUserById(updatedById);
+
+        return fromDocumentEntity(
+                savedEntity,
+                createdByUser,
+                updatedByUser
+        );
+    }
+
+    private static String[] getNullPropertyNames(Object source) {
+        final org.springframework.beans.BeanWrapper src = new org.springframework.beans.BeanWrapperImpl(source);
+        java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
+
+        java.util.Set<String> emptyNames = new java.util.HashSet<>();
+        for (java.beans.PropertyDescriptor pd : pds) {
+            Object srcValue = src.getPropertyValue(pd.getName());
+            if (srcValue == null) emptyNames.add(pd.getName());
+        }
+        String[] result = new String[emptyNames.size()];
+        return emptyNames.toArray(result);
     }
 }

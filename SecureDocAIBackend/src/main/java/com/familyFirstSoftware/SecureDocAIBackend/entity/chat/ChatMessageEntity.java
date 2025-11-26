@@ -39,7 +39,7 @@ public class ChatMessageEntity {
     @JoinColumn(name = "sender_id", nullable = false)
     private UserEntity sender;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)

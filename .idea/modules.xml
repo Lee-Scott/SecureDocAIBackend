@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SecureDocAIBackend.iml" filepath="$PROJECT_DIR$/.idea/SecureDocAIBackend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SecureDocAIBackend/SecureDocAIBackend.iml" filepath="$PROJECT_DIR$/SecureDocAIBackend/SecureDocAIBackend.iml" />
     </modules>
   </component>
 </project>

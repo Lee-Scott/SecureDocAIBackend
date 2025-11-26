@@ -18,8 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
 import java.net.URI;
@@ -52,6 +54,8 @@ public class UserResource {
     private final UserService userService;
     private final JwtService jwtService;
     private final ApiLogoutHandler apiLogoutHandler;
+    @Value("${spring.mail.verify.host}")
+    private String frontendHost;
 
     @PostMapping(path = {"/register"})
     public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
@@ -61,10 +65,9 @@ public class UserResource {
 
 
     @GetMapping(path = {"/verify"})
-    public ResponseEntity<Response> verifyAccount(@RequestParam("key") String key, HttpServletRequest request) throws InterruptedException {
-        //TimeUnit.SECONDS.sleep(2); // Simulate some processing delay
+    public RedirectView verifyAccount(@RequestParam("key") String key) {
         userService.verifyAccountKey(key);
-        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account verified.", OK));
+        return new RedirectView(frontendHost + "/user/verify?key=" + key + "&verified=true");
     }
 
     @GetMapping(path = {"/profile"})
@@ -188,9 +191,9 @@ public class UserResource {
     }
 
     @GetMapping(path = {"/verify/password"})
-    public ResponseEntity<Response> verifyPassword(@RequestParam ("key") String key, HttpServletRequest request) {
+    public RedirectView verifyPassword(@RequestParam("key") String key) {
         var user = userService.verifyPasswordKey(key);
-        return ResponseEntity.ok().body(getResponse(request,    Map.of("user", user), "Enter new password", OK));
+        return new RedirectView(frontendHost + "/resetPassword?key=" + key + "&verified=true");
     }
 
     @PostMapping(path = {"/resetPassword/reset"})

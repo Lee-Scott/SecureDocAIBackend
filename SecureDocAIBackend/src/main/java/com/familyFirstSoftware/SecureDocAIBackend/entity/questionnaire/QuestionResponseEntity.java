@@ -32,7 +32,7 @@ public class QuestionResponseEntity extends Auditable {
     @JoinColumn(name = "question_id", nullable = false)
     private QuestionEntity question;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "text")
     private String answerValue;
 
     @Column(nullable = false)

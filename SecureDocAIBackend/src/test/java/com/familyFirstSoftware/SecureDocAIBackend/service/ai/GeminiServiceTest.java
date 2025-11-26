@@ -9,6 +9,8 @@ import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.springframework.test.context.ActiveProfiles;
+
 @SpringBootTest
 @TestPropertySource(properties = {
         "SECRET=a-dummy-secret-for-testing",
@@ -16,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "gemini.location=us-central1",
         "gemini.model.name=gemini-pro"
 })
+@ActiveProfiles("test")
 class GeminiServiceTest {
 
     @MockBean

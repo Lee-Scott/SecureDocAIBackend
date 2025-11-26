@@ -1,39 +1,60 @@
-version: '3.8'  # Add the version of your Docker Compose
+version: '3.8'
 
 services:
   postgresdb:
+    image: postgres:16.0-alpine
     container_name: postgrescontainer
-    image: postgres:17.2
-    restart: always # if the computer restarts, restart the container
+    restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-lee}  # lee is default value if POSTGRES_USER is not set
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    expose:
-      - 5432
     ports:
-      - 5432:5432 # map the port 5432 of the container to the 5432 of the host
+      - "5432:5432"
     volumes:
-      - postgresvolume:/var/lib/postgresql/data # map the data directory of the container to the data directory of the host. This is how you save data / mount a volume when a container is stopped.
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql # map the schema.sql file of the host to the docker-entrypoint-initdb.d directory of the container
-      #- ./user.sql:/docker-entrypoint-initdb.d/schema.sql # Uncomment if you want to load a user.sql file
+      - postgresvolume:/var/lib/postgresql/data
+    networks:
+      - securedocnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../SecureDocAIBackend
+      dockerfile: Dockerfile
+    container_name: backendcontainer
+    restart: always
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - securedocnet
+    depends_on:
+      postgresdb:
+        condition: service_healthy
 
   pgadmin:
     container_name: pgadmincontainer
-    image: dpage/pgadmin4:latest  # Use the official pgAdmin image
-    restart: always 
+    image: dpage/pgadmin4:latest
+    restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-      PGADMIN_DEFAULT_ADDRESS: 6000 
-      PGADMIN_LISTEN_PORT: 6000  
-    expose:
-      - 6000
+      PGADMIN_LISTEN_PORT: 6000
     ports:
-      - 7000:6000 # map the port 6000 of the container to the 7000 of the host
+      - 7000:6000
     volumes:
-      - pgadminvolume:/var/lib/pgadmin # persist pgadmin data
+      - pgadminvolume:/var/lib/pgadmin
 
 volumes:
-  postgresvolume:  # Volume for the Postgres container's data
-  pgadminvolume:   # Volume for the pgAdmin container's data
+  postgresvolume:
+  pgadminvolume:
+
+networks:
+  securedocnet:
+    driver: bridge

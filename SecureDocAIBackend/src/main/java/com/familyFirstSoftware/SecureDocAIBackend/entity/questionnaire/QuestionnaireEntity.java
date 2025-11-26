@@ -32,7 +32,7 @@ public class QuestionnaireEntity extends Auditable {
     @Column(name = "title_search")
     private String titleSearch;
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     private String description;
 
     @Enumerated(EnumType.STRING)

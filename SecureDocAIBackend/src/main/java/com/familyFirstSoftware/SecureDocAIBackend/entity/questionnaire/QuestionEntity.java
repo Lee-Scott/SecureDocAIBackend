@@ -34,7 +34,7 @@ public class QuestionEntity extends Auditable {
     @Column(nullable = false)
     private Integer questionNumber;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String questionText;
 
     @Enumerated(EnumType.STRING)
@@ -44,7 +44,7 @@ public class QuestionEntity extends Auditable {
     @Column(nullable = false)
     private Boolean isRequired = true;
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     private String helpText;
 
     @ElementCollection(fetch = FetchType.EAGER)

@@ -304,33 +304,9 @@ public class UserServiceImpl implements UserService {
     public User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio) {
         UserEntity userEntity = getUserEntityByUserId(userId);
         log.info("Updating user: {} with email: {}, current email: {}", userId, email, userEntity.getEmail());
-
         userEntity.setFirstName(firstName);
         userEntity.setLastName(lastName);
-
-        // Only validate email if it's actually being changed
-        if (email != null && !email.trim().isEmpty()) {
-            String normalizedEmail = email.toLowerCase().trim();
-            String currentEmail = userEntity.getEmail().toLowerCase().trim();
-
-            log.info("Normalized email: {}, Current email: {}, Are they equal? {}",
-                    normalizedEmail, currentEmail, normalizedEmail.equals(currentEmail));
-
-            // Only check for duplicates if the email is actually changing
-            if (!normalizedEmail.equals(currentEmail)) {
-                log.info("Email is changing, checking for duplicates...");
-                var existingUser = userRepository.findUserByEmailIgnoreCase(normalizedEmail);
-                if (existingUser.isPresent() && !existingUser.get().getId().equals(userEntity.getId())) {
-                    log.error("Duplicate email found for user ID: {} with email: {}", existingUser.get().getId(), normalizedEmail);
-                    throw new ApiException("Email '" + normalizedEmail + "' is already in use by another user.");
-                }
-                userEntity.setEmail(normalizedEmail);
-                log.info("Email updated successfully to: {}", normalizedEmail);
-            } else {
-                log.info("Email unchanged, skipping validation");
-            }
-        }
-
+        updateUserEmailIfNeeded(userEntity, email, "User");
         userEntity.setPhone(phone);
         userEntity.setBio(bio);
         userRepository.save(userEntity);
@@ -342,33 +318,9 @@ public class UserServiceImpl implements UserService {
     public User updateUserByAdmin(String userId, String firstName, String lastName, String email, String phone, String bio) {
         UserEntity userEntity = getUserEntityByUserId(userId);
         log.info("Admin updating user: {} with email: {}, current email: {}", userId, email, userEntity.getEmail());
-
         userEntity.setFirstName(firstName);
         userEntity.setLastName(lastName);
-
-        // Only validate email if it's actually being changed
-        if (email != null && !email.trim().isEmpty()) {
-            String normalizedEmail = email.toLowerCase().trim();
-            String currentEmail = userEntity.getEmail().toLowerCase().trim();
-
-            log.info("Admin - Normalized email: {}, Current email: {}, Are they equal? {}",
-                    normalizedEmail, currentEmail, normalizedEmail.equals(currentEmail));
-
-            // Only check for duplicates if the email is actually changing
-            if (!normalizedEmail.equals(currentEmail)) {
-                log.info("Admin - Email is changing, checking for duplicates...");
-                var existingUser = userRepository.findUserByEmailIgnoreCase(normalizedEmail);
-                if (existingUser.isPresent() && !existingUser.get().getId().equals(userEntity.getId())) {
-                    log.error("Admin - Duplicate email found for user ID: {} with email: {}", existingUser.get().getId(), normalizedEmail);
-                    throw new ApiException("Email '" + normalizedEmail + "' is already in use by another user.");
-                }
-                userEntity.setEmail(normalizedEmail);
-                log.info("Admin - Email updated successfully to: {}", normalizedEmail);
-            } else {
-                log.info("Admin - Email unchanged, skipping validation");
-            }
-        }
-
+        updateUserEmailIfNeeded(userEntity, email, "Admin");
         userEntity.setPhone(phone);
         userEntity.setBio(bio);
         userRepository.save(userEntity);
@@ -567,5 +519,26 @@ public class UserServiceImpl implements UserService {
                 .collect(toList());
     }
 
+
+    private void updateUserEmailIfNeeded(UserEntity userEntity, String email, String updatedBy) {
+        if (email != null && !email.trim().isEmpty()) {
+            String normalizedEmail = email.toLowerCase().trim();
+            String currentEmail = userEntity.getEmail().toLowerCase().trim();
+            log.info("{} - Normalized email: {}, Current email: {}, Are they equal? {}",
+                    updatedBy, normalizedEmail, currentEmail, normalizedEmail.equals(currentEmail));
+            if (!normalizedEmail.equals(currentEmail)) {
+                log.info("{} - Email is changing, checking for duplicates...", updatedBy);
+                var existingUser = userRepository.findUserByEmailIgnoreCase(normalizedEmail);
+                if (existingUser.isPresent() && !existingUser.get().getId().equals(userEntity.getId())) {
+                    log.error("{} - Duplicate email found for user ID: {} with email: {}", updatedBy, existingUser.get().getId(), normalizedEmail);
+                    throw new ApiException("Email '" + normalizedEmail + "' is already in use by another user.");
+                }
+                userEntity.setEmail(normalizedEmail);
+                log.info("{} - Email updated successfully to: {}", updatedBy, normalizedEmail);
+            } else {
+                log.info("{} - Email unchanged, skipping validation", updatedBy);
+            }
+        }
+    }
 
 }

@@ -4,12 +4,11 @@ import com.familyFirstSoftware.SecureDocAIBackend.dto.Document;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentVersionDto;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.api.IDocument;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.DocumentDetailsDto;
-import com.familyFirstSoftware.SecureDocAIBackend.entity.DocumentLock;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.PatchDocRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,11 @@ public interface DocumentService {
      * Updates document metadata.
      */
     IDocument updateDocument(String documentId, String name, String description);
+    /**
+     * Updates document metadata using a PatchDocRequest object.
+     */
+    Document updateDocument(String documentId, PatchDocRequest patchDocRequest);
+
 
     /**
      * Partially updates document metadata. Only non-null fields are applied.

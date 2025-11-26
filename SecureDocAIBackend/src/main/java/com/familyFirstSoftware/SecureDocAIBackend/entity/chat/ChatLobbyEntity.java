@@ -31,7 +31,7 @@ public class ChatLobbyEntity extends Auditable {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description")
     private String description;
 
     @Column(name = "max_participants")

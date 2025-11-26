@@ -11,7 +11,10 @@ import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.springframework.test.context.ActiveProfiles;
+
 @DataJpaTest
+@ActiveProfiles("test")
 public class QuestionnaireRepositoryTest {
 
     @Autowired

@@ -18,6 +18,9 @@ import java.util.List;
  * This interface defines the operations related to user management, such as creating a user, verifying an account, and setting up MFA.
  * DAO
  */
+import org.springframework.stereotype.Service;
+
+@Service
 public interface UserService {
     void createUser(String firstName, String lastName, String email, String password);
     RoleEntity getRoleName(String name);

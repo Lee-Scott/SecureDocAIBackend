@@ -15,8 +15,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.test.context.ActiveProfiles;
+
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class DocumentProcessingResourceTest {
 
     @Autowired

@@ -50,7 +50,7 @@ public class EmailServiceImpl implements EmailService {
             sender.send(message);
         }catch (Exception e){
             log.error(e.getMessage());
-            throw new ApiException("Failed to send new account email"); // TODO: we should not throw an exception here. Probably just resend or ignore and log then wait for user to try again
+            log.error("Failed to send new account email"); // TODO: we should not throw an exception here. Probably just resend or ignore and log then wait for user to try again
         }
 
     }
@@ -69,7 +69,7 @@ public class EmailServiceImpl implements EmailService {
             sender.send(message);
         }catch (Exception e){
             log.error(e.getMessage());
-            throw new ApiException("Failed to send reset password email"); // TODO: we should not throw an exception here. Probably just resend or ignore and log then wait for user to try again
+            log.error("Failed to send reset password email"); // TODO: we should not throw an exception here. Probably just resend or ignore and log then wait for user to try again
         }
 
     }

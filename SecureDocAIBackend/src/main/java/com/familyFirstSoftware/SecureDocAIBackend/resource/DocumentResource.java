@@ -192,6 +192,12 @@ public class DocumentResource {
         return ResponseEntity.ok(getResponse(request, of("document", updatedDocument), "Document updated", OK));
     }
 
+    @PatchMapping("/{documentId}")
+    public ResponseEntity<Response> patchDocument(@AuthenticationPrincipal User user, @PathVariable("documentId") String documentId, @RequestBody PatchDocRequest patchDocRequest) {
+        Document updatedDocument = documentService.updateDocument(documentId, patchDocRequest);
+        return ResponseEntity.ok(getResponse(null, of("document", updatedDocument), "Document updated successfully", OK));
+    }
+
     @PreAuthorize("hasAnyAuthority('document:read') or hasAnyRole('DOCTOR', 'SUPER_ADMIN')")
     @GetMapping(value = "/{documentId}/download")
     public ResponseEntity<Resource> downloadDocument(

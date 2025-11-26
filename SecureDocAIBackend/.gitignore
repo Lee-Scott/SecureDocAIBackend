@@ -1,92 +1,61 @@
-### IntelliJ ###
-.idea/
-*.iml
-out/
-*.ipr
-*.iws
-
-# IntelliJ log & cache files
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-
-### Java ###
+# -------------------------
+# Java / Maven
+# -------------------------
 target/
-build/
 *.class
 *.jar
 *.war
 *.ear
-
-# Logs
+*.iml
 *.log
-logs/
-debug.log
+*.tmp
 
-# OS files
-.DS_Store
-Thumbs.db
-
-### Maven ###
+# Maven wrapper
 .mvn/wrapper/maven-wrapper.jar
 
-### Gradle ###
-.gradle/
-!gradle/wrapper/gradle-wrapper.jar
-
-### Spring Boot ###
-# Application configs containing secrets
-application.properties
-application.yml
-application-local.properties
-application-local.yml
-bootstrap.yml
-bootstrap-local.yml
-
-# Profiles
-application-*.properties
-application-*.yml
-
-### Docker ###
-# Docker env / secrets
+# -------------------------
+# Environment / Config
+# -------------------------
 .env
-.env.*
+docker/.env
+*.properties~
+*.yml~
+*.yaml~
+
+# -------------------------
+# IDEs / Editors
+# -------------------------
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# -------------------------
+# OS / System files
+# -------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -------------------------
+# Docker
+# -------------------------
 docker-compose.override.yml
 
-# Local-only volumes & build cache
-docker-data/
-docker-cache/
-*.pid
-
-### Node (if frontend bundled) ###
-node_modules/
-dist/
-build/
-
-### JUnit / Coverage ###
+# -------------------------
+# Test / Reports / Coverage
+# -------------------------
+jacoco.exec
 *.exec
-*.ec
-*.class
 surefire-reports/
-test-output/
-coverage/
-
-### TLS / Keys ###
-*.pem
-*.key
-*.crt
-*.pfx
-*.jks
-*.keystore
-
-### Ignoring uploaded files (if any) ###
-uploads/
-storage/
-
-### Misc ###
-*.swp
-*.tmp
-*.bak
-*.old
+generated-sources/
+generated-test-sources/
