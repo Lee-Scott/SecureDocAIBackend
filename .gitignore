@@ -1,64 +1,79 @@
-# IntelliJ IDEA project files
+# ==========================
+# IntelliJ IDEA
+# ==========================
 .idea/
 *.iml
 *.iws
 *.ipr
 
-# Maven / Gradle build directories and dependencies
+# VS Code
+.vscode/
+
+# Eclipse
+*.classpath
+*.project
+.settings/
+
+# ==========================
+# Build directories
+# ==========================
+# Maven
 target/
+# Gradle
 build/
+
+# ==========================
+# Java / Spring Boot
+# ==========================
+*.class
 *.jar
 *.war
 *.ear
 
-# Dependency directories
-node_modules/
+# Spring Boot DevTools temporary files
+.spring-boot-devtools/
 
-# Logs and temporary files
+# ==========================
+# Environment / secrets
+# ==========================
+# Ignore only sensitive secrets
+.env
+.env.*
+**/.env
+env.properties
+application-secrets.yml
+docker/.env
+
+# Keep all other application configs tracked
+# e.g., application.yml, application-dev.yml, etc., are NOT ignored
+
+# ==========================
+# Logs and temp files
+# ==========================
 *.log
 *.tmp
 *.swp
 *.bak
 
-# Eclipse project files (if applicable)
-*.classpath
-*.project
-.settings/
-
-# Local environment configuration (add your secure files here)
-application.properties
-application.yml
-env.properties
-*.env
-
-# IDE-specific files
-.vscode/
-*.idea/
-
-# MacOS
+# ==========================
+# OS files
+# ==========================
+# macOS
 .DS_Store
-
 # Windows
 Thumbs.db
 
-# Gradle wrapper files (if you’re using Gradle)
+# ==========================
+# Node / dependencies (if any)
+# ==========================
+node_modules/
+
+# ==========================
+# Wrappers
+# ==========================
+# Gradle wrapper
 gradle-wrapper.jar
 gradle-wrapper.properties
-
-# Maven wrapper files (if you’re using Maven)
+# Maven wrapper
 mvnw
 mvnw.cmd
-
-# Spring Boot DevTools (temporary files)
-.spring-boot-devtools/
-
-
-# Ignore some of my files
-application-dev.yml
-.env
-
-# Other common Spring Boot and Java project files to ignore
-target/
-*.log
-*.class
-*.jar
