@@ -1,4 +1,4 @@
-package com.familyFirstSoftware.SecureDocAIBackend.dtorequest.questionnaire;
+package com.familyFirstSoftware.SecureDocAIBackend.dtorequest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
