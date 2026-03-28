@@ -1,7 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.entity;
 
 import com.familyFirstSoftware.SecureDocAIBackend.domain.RequestContext;
-import com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -16,6 +15,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.util.AlternativeJdkIdGenerator;
@@ -28,6 +28,7 @@ import static java.time.LocalDateTime.now;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true)
@@ -54,7 +55,7 @@ public abstract class Auditable {
     @PrePersist
     public void beforePersist() {
         var userId = RequestContext.getUserId();
-        if(userId == null) { throw new ApiException("Cannot persist entity without user ID in Request Context for this thread"); }
+        if(userId == null) { userId = 0L; }
         setCreatedAt(now());
         setCreatedBy(userId);
         setUpdatedBy(userId);
@@ -64,7 +65,7 @@ public abstract class Auditable {
     @PreUpdate
     public void beforeUpdate() {
         var userId = RequestContext.getUserId();
-        if(userId == null) { throw new ApiException("Cannot update entity without user ID in Request Context for this thread"); }
+        if(userId == null) { userId = 0L; }
         setUpdatedAt(now());
         setUpdatedBy(userId);
     }

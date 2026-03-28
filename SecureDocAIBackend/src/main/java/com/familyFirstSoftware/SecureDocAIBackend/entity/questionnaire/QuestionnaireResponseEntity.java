@@ -4,7 +4,10 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.Auditable;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -23,6 +26,9 @@ import java.util.List;
 @Table(name = "questionnaire_responses")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuestionnaireResponseEntity extends Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY)

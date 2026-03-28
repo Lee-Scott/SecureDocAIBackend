@@ -105,7 +105,7 @@ protected void configure(HttpSecurity http) throws Exception {
             .antMatchers("/api/chat/**").hasAuthority("AI_AGENT")
             // ... other endpoint configurations
             .anyRequest().authenticated()
-        .and()
+        .and();
         // ... other configurations
 }
 ```

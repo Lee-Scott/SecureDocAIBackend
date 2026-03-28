@@ -3,10 +3,15 @@ package com.familyFirstSoftware.SecureDocAIBackend.entity.chat;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.chat.MessageType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.sql.Types;
 import java.time.LocalDateTime;
 
 /**
@@ -21,6 +26,9 @@ import java.time.LocalDateTime;
 @Table(name = "chat_messages")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessageEntity {
 
     @Id
@@ -39,6 +47,8 @@ public class ChatMessageEntity {
     @JoinColumn(name = "sender_id", nullable = false)
     private UserEntity sender;
 
+    @Lob
+    @JdbcTypeCode(Types.LONGVARCHAR)
     @Column(name = "content", nullable = false)
     private String content;
 

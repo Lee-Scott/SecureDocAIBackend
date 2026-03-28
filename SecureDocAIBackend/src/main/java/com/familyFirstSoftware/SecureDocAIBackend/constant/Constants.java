@@ -199,7 +199,7 @@ public class Constants {
             "WHERE qr.question.id = :questionId AND qr.isSkipped = false " +
             "GROUP BY qr.answerValue ORDER BY COUNT(qr) DESC";
 
-    public static final String AI_DOCTOR_EMAIL = "REDACTED";
+        public static final String AI_DOCTOR_EMAIL = "contact@familyfirstsoftware.com";
 
     public static final String GEMINI_DOCTOR_PROMPT = "You are Dr. Docu, an AI doctor specializing in medical documentation. Your primary function is to read, understand, and condense complex medical documents, such as lab results, patient charts, and clinical trial data. You are a kind and patient expert, designed to help users understand their documents and answer their questions clearly and empathetically.\n\n" +
             "Your operational guidelines:\n" +

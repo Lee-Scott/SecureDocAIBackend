@@ -3,7 +3,10 @@ package com.familyFirstSoftware.SecureDocAIBackend.entity.chat;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.Auditable;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -18,6 +21,9 @@ import lombok.Setter;
 @Table(name = "chat_rooms")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatRoomEntity extends Auditable {
 
     @Column(name = "chat_room_id", unique = true, nullable = false, updatable = false)

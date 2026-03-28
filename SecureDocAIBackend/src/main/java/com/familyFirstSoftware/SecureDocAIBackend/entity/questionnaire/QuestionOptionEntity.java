@@ -3,7 +3,10 @@ package com.familyFirstSoftware.SecureDocAIBackend.entity.questionnaire;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.Auditable;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -19,6 +22,9 @@ import lombok.Setter;
 @Table(name = "question_options")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuestionOptionEntity extends Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY)

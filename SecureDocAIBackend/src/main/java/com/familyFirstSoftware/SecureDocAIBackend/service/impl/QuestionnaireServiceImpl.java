@@ -52,7 +52,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     public Questionnaire createQuestionnaire(Questionnaire questionnaire) {
         log.info("Creating new questionnaire: {}", questionnaire.getTitle());
 
-        var entity = new QuestionnaireEntity();
+        var entity = QuestionnaireEntity.builder().build();
         entity.setTitle(questionnaire.getTitle());
         entity.setTitleSearch(questionnaire.getTitle() == null ? null : questionnaire.getTitle().toLowerCase());
         entity.setDescription(questionnaire.getDescription());
@@ -184,7 +184,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             responseEntity = existingResponse.get();
             log.info("Updating existing response for user: {}", userDto.getUserId());
         } else {
-            responseEntity = new QuestionnaireResponseEntity();
+            responseEntity = QuestionnaireResponseEntity.builder().build();
             responseEntity.setQuestionnaire(questionnaire);
             responseEntity.setUser(user);
             log.info("Creating new response for user: {}", userDto.getUserId());
@@ -274,7 +274,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     private QuestionPageEntity createPageEntity(com.familyFirstSoftware.SecureDocAIBackend.dto.questionnaire.QuestionPage pageDto, QuestionnaireEntity questionnaire) {
-        var pageEntity = new QuestionPageEntity();
+        var pageEntity = QuestionPageEntity.builder().build();
         pageEntity.setQuestionnaire(questionnaire);
         pageEntity.setPageNumber(pageDto.getPageNumber());
         pageEntity.setTitle(pageDto.getTitle());
@@ -292,7 +292,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     private QuestionEntity createQuestionEntity(com.familyFirstSoftware.SecureDocAIBackend.dto.questionnaire.Question questionDto, QuestionPageEntity page) {
-        var questionEntity = new QuestionEntity();
+        var questionEntity = QuestionEntity.builder().build();
         questionEntity.setPage(page);
         questionEntity.setQuestionNumber(questionDto.getQuestionNumber());
         questionEntity.setQuestionText(questionDto.getQuestionText());
@@ -312,7 +312,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     }
 
     private QuestionOptionEntity createOptionEntity(com.familyFirstSoftware.SecureDocAIBackend.dto.questionnaire.QuestionOption optionDto, QuestionEntity question) {
-        var optionEntity = new QuestionOptionEntity();
+        var optionEntity = QuestionOptionEntity.builder().build();
         optionEntity.setQuestion(question);
         optionEntity.setOptionText(optionDto.getOptionText());
         optionEntity.setOptionValue(optionDto.getOptionValue());
@@ -338,7 +338,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                         .orElseThrow(() -> new ApiException("Question not found with ID: " + responseDto.getQuestionId()));
 
                 // Create new question response entity
-                var questionResponse = new QuestionResponseEntity();
+                var questionResponse = QuestionResponseEntity.builder().build();
                 questionResponse.setQuestionnaireResponse(responseEntity);
                 questionResponse.setQuestion(question);
                 questionResponse.setAnswerValue(responseDto.getAnswerValue());

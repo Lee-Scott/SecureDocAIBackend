@@ -63,7 +63,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         UserEntity user2 = getUserEntityByUserId(user2Id);
 
         // Create new chat room
-        ChatRoomEntity chatRoom = new ChatRoomEntity();
+        ChatRoomEntity chatRoom = ChatRoomEntity.builder().build();
         chatRoom.setUser1(user1);
         chatRoom.setUser2(user2);
         chatRoom.setIsActive(true);

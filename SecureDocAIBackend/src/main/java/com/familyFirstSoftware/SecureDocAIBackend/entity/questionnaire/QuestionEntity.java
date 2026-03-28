@@ -5,7 +5,10 @@ import com.familyFirstSoftware.SecureDocAIBackend.enumeration.questionnaire.Ques
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
@@ -24,6 +27,9 @@ import java.util.Map;
 @Table(name = "questions")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuestionEntity extends Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY)

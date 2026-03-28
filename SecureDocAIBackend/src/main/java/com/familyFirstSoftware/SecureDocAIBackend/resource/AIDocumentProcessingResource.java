@@ -1,13 +1,16 @@
 package com.familyFirstSoftware.SecureDocAIBackend.resource;
 
 import com.familyFirstSoftware.SecureDocAIBackend.dto.response.HttpResponse;
+import com.familyFirstSoftware.SecureDocAIBackend.entity.AiSummaryEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.service.AIReportService;
+import com.familyFirstSoftware.SecureDocAIBackend.service.AiSummaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,14 +20,15 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/api/v1/ai/reports")
+@RequestMapping({"/api/v1/ai", "/api/ai"})
 @RequiredArgsConstructor
 @Tag(name = "AI Document Processing", description = "APIs for processing and analyzing documents with AI")
 public class AIDocumentProcessingResource {
 
     private final AIReportService aiReportService;
+    private final AiSummaryService aiSummaryService;
 
-    @PostMapping(value = "/process", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/reports/process", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Process a single document for AI analysis",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Document processed successfully"),
@@ -39,7 +43,16 @@ public class AIDocumentProcessingResource {
                 ));
     }
 
-    @PostMapping("/process/batch")
+    @PostMapping("/documents/{documentId}/summarize")
+    public ResponseEntity<AiSummaryEntity> summarizeDocument(
+            @PathVariable String documentId,
+            @RequestBody(required = false) Map<String, Object> payload) {
+        AiSummaryEntity summary = aiSummaryService.generateAndSaveSummary(documentId);
+        return new ResponseEntity<>(summary, HttpStatus.CREATED);
+    }
+
+
+    @PostMapping("/reports/process/batch")
     @Operation(summary = "Process multiple documents in a batch for AI analysis",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Documents processed successfully"),
@@ -54,7 +67,7 @@ public class AIDocumentProcessingResource {
         );
     }
 
-    @PostMapping(value = "/process-and-send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/reports/process-and-send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Process a single document and send the result to a chat room",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Document processed and sent successfully"),
@@ -70,7 +83,7 @@ public class AIDocumentProcessingResource {
         );
     }
 
-    @GetMapping("/limits")
+    @GetMapping("/reports/limits")
     @Operation(summary = "Get the document processing limits",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Limits retrieved successfully",
