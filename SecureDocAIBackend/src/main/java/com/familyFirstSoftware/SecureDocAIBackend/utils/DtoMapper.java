@@ -6,6 +6,8 @@ import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatMessageEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatRoom;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatRoomEntity;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.Patient;
+import com.familyFirstSoftware.SecureDocAIBackend.entity.PatientEntity;
 
 public class DtoMapper {
     public static User toUserDto(UserEntity entity) {
@@ -33,6 +35,18 @@ public class DtoMapper {
             dto.setAuthorities(entity.getRole().getAuthorities().getValue());
         }
 
+        return dto;
+    }
+
+    public static Patient fromPatientEntity(PatientEntity entity) {
+        if (entity == null) return null;
+        Patient dto = new Patient();
+        dto.setPatientId(entity.getPatientId());
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
+        dto.setEmail(entity.getEmail());
+        dto.setDob(entity.getDob());
+        dto.setCreatedAt(entity.getCreatedAt());
         return dto;
     }
 

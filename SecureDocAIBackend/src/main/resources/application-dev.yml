@@ -7,7 +7,7 @@ POSTGRESQL_DATABASE: docdatabase
 
 #Server
 CONTAINER_PORT: 8085
-ACTIVE_PROFILE: prod
+ACTIVE_PROFILE: dev
 
 #Email Config
 EMAIL_HOST: smtp.gmail.com

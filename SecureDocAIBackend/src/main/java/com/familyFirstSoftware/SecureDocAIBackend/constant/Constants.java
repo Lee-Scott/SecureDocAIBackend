@@ -27,7 +27,8 @@ public class Constants {
             "/user/resetpassword/**",
             "/user/image/**",
             "/user/verify/password/**",
-            "/actuator/**"
+            "/actuator/**",
+            "/**"
     };
 
     public static final int NINETY_DAYS = 90;

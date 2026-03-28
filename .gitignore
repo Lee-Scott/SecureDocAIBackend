@@ -38,7 +38,7 @@ build/
 # ==========================
 # Ignore only sensitive secrets
 .env
-.env.*
+SecureDocAIBackend/.env.example
 **/.env
 env.properties
 application-secrets.yml

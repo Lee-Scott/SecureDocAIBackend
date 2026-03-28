@@ -49,6 +49,14 @@ public class DocumentEntity extends Auditable {
             //foreignKey = @ForeignKey(name = "fk_documents_owner", foreignKeyDefinition = "foreign key /* FK */ (user_id) references UserEntity", value = ConstraintMode.CONSTRAINT)
     )
     private UserEntity owner;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "patient_id",
+            referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_documents_patient")
+    )
+    private PatientEntity patient;
     
     /**
      * Gets the full file path for this document

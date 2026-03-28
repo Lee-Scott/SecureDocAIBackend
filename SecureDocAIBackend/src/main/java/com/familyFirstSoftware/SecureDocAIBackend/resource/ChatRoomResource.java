@@ -4,9 +4,13 @@ import com.familyFirstSoftware.SecureDocAIBackend.domain.Response;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.User;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatMessage;
 import com.familyFirstSoftware.SecureDocAIBackend.dto.chat.ChatRoom;
+import com.familyFirstSoftware.SecureDocAIBackend.dto.ChatMessageResponse;
+import com.familyFirstSoftware.SecureDocAIBackend.dtorequest.ChatMessageRequest;
 import com.familyFirstSoftware.SecureDocAIBackend.enumeration.chat.MessageType;
 import com.familyFirstSoftware.SecureDocAIBackend.service.ChatRoomService;
+import com.familyFirstSoftware.SecureDocAIBackend.service.ChatService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +41,7 @@ import static org.springframework.http.HttpStatus.OK;
 public class ChatRoomResource {
 
     private final ChatRoomService chatRoomService;
+    private final ChatService chatService;
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
@@ -130,5 +135,22 @@ public class ChatRoomResource {
         String questionnaireId = (String) request.get("questionnaireId");
         chatRoomService.shareQuestionnaireResults(chatRoomId, userPrincipal.getUserId(), questionnaireId);
         return ResponseEntity.ok().body(getResponse(httpRequest, null, "Questionnaire results shared successfully.", OK));
+    }
+
+    @PostMapping("/ai/messages")
+    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
+    public ResponseEntity<Response> sendAiMessage(
+            @RequestBody @Valid ChatMessageRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        ChatMessageResponse message = chatService.sendMessage(request);
+        return ResponseEntity.ok().body(getResponse(httpRequest, Map.of("message", message), "AI Message sent successfully.", OK));
+    }
+
+    @GetMapping("/ai/messages")
+    @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
+    public ResponseEntity<Response> getAiChatHistory(HttpServletRequest request) {
+        List<ChatMessageResponse> messages = chatService.getChatHistory();
+        return ResponseEntity.ok().body(getResponse(request, Map.of("messages", messages), "AI Chat history retrieved successfully.", OK));
     }
 }

@@ -1,5 +1,6 @@
 package com.familyFirstSoftware.SecureDocAIBackend.repository;
 
+import com.familyFirstSoftware.SecureDocAIBackend.entity.UserEntity;
 import com.familyFirstSoftware.SecureDocAIBackend.entity.chat.ChatRoomEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

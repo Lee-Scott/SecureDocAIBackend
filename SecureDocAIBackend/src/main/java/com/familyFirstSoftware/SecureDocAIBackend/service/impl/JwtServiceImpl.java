@@ -15,6 +15,7 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -62,16 +63,22 @@ import static org.springframework.security.core.authority.AuthorityUtils.commaSe
 @RequiredArgsConstructor
 @Slf4j
 public class JwtServiceImpl extends JwtConfiguration implements JwtService {
+
+    @PostConstruct
+    public void init() {
+        // Init method can be empty or used for other startup tasks
+    }
     private final UserService userService;
 
     private final Supplier<SecretKey> key = () -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(getSecret()));
 
-    private final Function<String, Claims> claimsFunction = token ->
-            Jwts.parser()
-                    .verifyWith(key.get())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+    private final Function<String, Claims> claimsFunction = token -> {
+        return Jwts.parser()
+            .verifyWith(key.get())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
+    };
 
     private final Function<String, String> subject = token -> getClaimsValue(token, Claims::getSubject);
 
@@ -139,15 +146,10 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
     }
 
     public Function<String, List<GrantedAuthority>> authorities = token -> {
-        Claims claims = claimsFunction.apply(token);
-        String authoritiesStr = claims.get(AUTHORITIES, String.class);
-        String role = claims.get(ROLE, String.class);
-        return commaSeparatedStringToAuthorityList(
-                new StringJoiner(AUTHORITY_DELIMITER)
-                        .add(authoritiesStr != null ? authoritiesStr : "")
-                        .add(ROLE_PREFIX + (role != null ? role : ""))
-                        .toString()
-        );
+        var claims = claimsFunction.apply(token);
+        var authorities = (String) claims.get(AUTHORITIES);
+        var role = (String) claims.get(ROLE);
+        return commaSeparatedStringToAuthorityList(new StringJoiner(AUTHORITY_DELIMITER).add(authorities).add(ROLE_PREFIX + role).toString());
     };
 
     @Override
