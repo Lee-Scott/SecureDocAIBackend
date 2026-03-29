@@ -123,7 +123,22 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     private void triggerAiResponse(String userContent, ChatRoomEntity chatRoom, UserEntity aiUser) {
         try {
-            String aiContent = aiService.generateResponse(userContent);
+            List<ChatMessageEntity> history = chatMessageRepository.findMessagesByChatRoomId(chatRoom.getChatRoomId());
+            StringBuilder promptBuilder = new StringBuilder();
+            
+            if (!history.isEmpty()) {
+                promptBuilder.append("Previous Conversation History:\n");
+                int startIndex = Math.max(0, history.size() - 10);
+                for (int i = startIndex; i < history.size() - 1; i++) { // -1 to skip the current message that was just saved
+                    ChatMessageEntity msg = history.get(i);
+                    String role = aiUser.getUserId().equals(msg.getSender().getUserId()) ? "AI Doctor" : "User";
+                    promptBuilder.append(role).append(": ").append(msg.getContent()).append("\n");
+                }
+                promptBuilder.append("\n");
+            }
+            promptBuilder.append("User's new message:\n").append(userContent);
+            
+            String aiContent = aiService.generateResponse(promptBuilder.toString());
 
             // This runs when the AI response is received
             ChatMessageEntity aiMessage = new ChatMessageEntity();
@@ -184,6 +199,20 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         message.setCreatedAt(LocalDateTime.now());
 
         chatMessageRepository.save(message);
+    }
+
+    @Override
+    public void deleteChatRoom(String chatRoomId) {
+        ChatRoomEntity chatRoom = chatRoomRepository.findByChatRoomId(chatRoomId)
+                .orElseThrow(() -> new ApiException("Chat room not found"));
+        
+        // Delete all associated messages first to prevent foreign key constraint violations
+        List<ChatMessageEntity> messages = chatMessageRepository.findByChatRoom(chatRoom);
+        if (!messages.isEmpty()) {
+            chatMessageRepository.deleteAll(messages);
+        }
+        
+        chatRoomRepository.delete(chatRoom);
     }
 
     private UserEntity getUserEntityByUserId(String userId) {

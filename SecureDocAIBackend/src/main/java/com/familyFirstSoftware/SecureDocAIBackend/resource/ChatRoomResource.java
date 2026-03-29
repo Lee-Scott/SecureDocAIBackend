@@ -82,6 +82,13 @@ public class ChatRoomResource {
         }
     }
 
+    @DeleteMapping("/{chatRoomId}")
+    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
+    public ResponseEntity<Response> deleteChatRoom(@PathVariable String chatRoomId, HttpServletRequest request) {
+        chatRoomService.deleteChatRoom(chatRoomId);
+        return ResponseEntity.ok().body(getResponse(request, null, "Chat room deleted successfully.", OK));
+    }
+
     @PostMapping("/{chatRoomId}/messages")
     @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> sendMessageToChatRoom(

@@ -53,16 +53,33 @@ public class ChatServiceImpl implements ChatService {
             return chatRoomRepository.save(newChatRoom);
         });
 
-        String prompt = request.getContent();
+        StringBuilder promptBuilder = new StringBuilder();
+
+        List<ChatMessageEntity> history = chatMessageRepository.findByChatRoom(chatRoom);
+        if (!history.isEmpty()) {
+            promptBuilder.append("Previous Conversation History:\n");
+            int startIndex = Math.max(0, history.size() - 10);
+            for (int i = startIndex; i < history.size(); i++) {
+                ChatMessageEntity msg = history.get(i);
+                String role = AI_DOCTOR_EMAIL.equals(msg.getSender().getEmail()) ? "AI Doctor" : "User";
+                promptBuilder.append(role).append(": ").append(msg.getContent()).append("\n");
+            }
+            promptBuilder.append("\n");
+        }
+
+        String currentQuestion = request.getContent();
         if (request.getDocumentId() != null && !request.getDocumentId().isEmpty()) {
             Optional<AiSummaryEntity> summaryOptional = aiSummaryRepository.findByDocument_DocumentId(request.getDocumentId());
             if (summaryOptional.isPresent()) {
                 String summary = summaryOptional.get().getSummary();
-                prompt = "Based on the following summary, please answer the user's question.\n\nSUMMARY:\n" + summary + "\n\nQUESTION:\n" + request.getContent();
+                promptBuilder.append("Context Summary:\n").append(summary).append("\n\n");
             } else {
                 return new ChatMessageResponse(null, "Please generate a summary for this document first.", LocalDateTime.now(), AI_AGENT);
             }
         }
+
+        promptBuilder.append("User's new message:\n").append(currentQuestion);
+        String prompt = promptBuilder.toString();
 
         ChatMessageEntity userMessage = new ChatMessageEntity();
         userMessage.setChatRoom(chatRoom);

@@ -89,6 +89,15 @@ public class AIReportServiceImpl implements AIReportService {
                 // Generate analysis based on the content
                 return generateAnalysis(document, content, analysisType);
                 
+            } catch (com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException e) {
+                log.error("Document file not found for analysis: {}", documentId);
+                throw DocumentOperationException.builder()
+                        .message(e.getMessage())
+                        .status(HttpStatus.BAD_REQUEST)
+                        .operation("analyzeDocument")
+                        .documentId(documentId)
+                        .cause(e)
+                        .build();
             } catch (Exception e) {
                 log.error("Error analyzing document: {}", documentId, e);
                 throw DocumentOperationException.builder()
@@ -180,7 +189,12 @@ public class AIReportServiceImpl implements AIReportService {
         String filePath = version.getFilePath();
         String extension = FilenameUtils.getExtension(filePath).toLowerCase();
         
-        try (InputStream is = resourceLoader.getResource("file:" + filePath).getInputStream()) {
+        org.springframework.core.io.Resource resource = resourceLoader.getResource("file:" + filePath);
+        if (!resource.exists()) {
+            throw new com.familyFirstSoftware.SecureDocAIBackend.exception.ApiException("Document file not found on the server. It may have been deleted.");
+        }
+        
+        try (InputStream is = resource.getInputStream()) {
             return switch (extension) {
                 case "pdf" -> extractTextFromPdf(is);
                 case "docx" -> extractTextFromDocx(is);

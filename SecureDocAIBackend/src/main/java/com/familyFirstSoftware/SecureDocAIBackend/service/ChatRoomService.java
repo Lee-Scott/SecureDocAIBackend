@@ -34,4 +34,6 @@ public interface ChatRoomService {
     List<User> getHealthcareProviders();
 
     void shareQuestionnaireResults(String chatRoomId, String userId, String questionnaireId);
+
+    void deleteChatRoom(String chatRoomId);
 }
