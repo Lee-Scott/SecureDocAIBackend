@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.AI_DOCTOR_EMAIL;
-
 /**
  * @author Lee Scott
  * @version 1.0
@@ -46,6 +44,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final com.familyFirstSoftware.SecureDocAIBackend.service.DocumentService documentService;
 
     @Qualifier("geminiService")
     private final AiService aiService;
@@ -94,7 +93,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public ChatMessage sendMessage(String chatRoomId, String senderId, String content, MessageType messageType) {
+    public ChatMessage sendMessage(String chatRoomId, String senderId, String content, MessageType messageType, String documentId) {
         // Find chat room
         ChatRoomEntity chatRoom = chatRoomRepository.findByChatRoomId(chatRoomId)
                 .orElseThrow(() -> new ApiException("Chat room not found"));
@@ -112,20 +111,29 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         userMessage.setCreatedAt(LocalDateTime.now());
         chatMessageRepository.save(userMessage);
 
-        // Determine the recipient and check if it's the AI doctor
+        // Determine the recipient and check if it's an AI persona
         UserEntity recipient = chatRoom.getUser1().getUserId().equals(senderId) ? chatRoom.getUser2() : chatRoom.getUser1();
-        if (AI_DOCTOR_EMAIL.equals(recipient.getEmail())) {
-            triggerAiResponse(content, chatRoom, recipient);
+        if (recipient.getEmail() != null && recipient.getEmail().endsWith("_ai@familyfirstsoftware.com")) {
+            triggerAiResponse(content, chatRoom, recipient, documentId);
         }
 
         return DtoMapper.toChatMessageDto(userMessage);
     }
 
-    private void triggerAiResponse(String userContent, ChatRoomEntity chatRoom, UserEntity aiUser) {
+    private void triggerAiResponse(String userContent, ChatRoomEntity chatRoom, UserEntity aiUser, String documentId) {
         try {
             List<ChatMessageEntity> history = chatMessageRepository.findMessagesByChatRoomId(chatRoom.getChatRoomId());
             StringBuilder promptBuilder = new StringBuilder();
             
+            // Extract document ID from userContent if documentId is null or empty
+            if (documentId == null || documentId.trim().isEmpty()) {
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\[ID:\\s*([a-fA-F0-9\\-]+)\\]");
+                java.util.regex.Matcher matcher = pattern.matcher(userContent);
+                if (matcher.find()) {
+                    documentId = matcher.group(1);
+                }
+            }
+
             if (!history.isEmpty()) {
                 promptBuilder.append("Previous Conversation History:\n");
                 int startIndex = Math.max(0, history.size() - 10);
@@ -136,9 +144,34 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 }
                 promptBuilder.append("\n");
             }
+            
+            if (documentId != null && !documentId.trim().isEmpty()) {
+                if (!documentService.documentExists(documentId)) {
+                    throw new jakarta.persistence.EntityNotFoundException("Document with ID " + documentId + " not found in the database.");
+                }
+                try {
+                    org.springframework.core.io.Resource resource = documentService.getResource(documentId, null);
+                    try (java.io.InputStream stream = resource.getInputStream()) {
+                        org.apache.tika.sax.BodyContentHandler handler = new org.apache.tika.sax.BodyContentHandler(-1);
+                        org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
+                        org.apache.tika.parser.AutoDetectParser parser = new org.apache.tika.parser.AutoDetectParser();
+                        parser.parse(stream, handler, metadata, new org.apache.tika.parser.ParseContext());
+                        String documentText = handler.toString();
+                        promptBuilder.append("\n\n--- DOCUMENT CONTENT ---\n")
+                                .append(documentText).append("\n--- END DOCUMENT CONTENT ---\n\n");
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to extract text for document {}", documentId, e);
+                    promptBuilder.append("[Note: Failed to load document context.]\n\n");
+                }
+            }
+            
             promptBuilder.append("User's new message:\n").append(userContent);
             
-            String aiContent = aiService.generateResponse(promptBuilder.toString());
+            String prompt = promptBuilder.toString();
+            log.info("Sending prompt to Gemini AI for chat room {}:\n{}", chatRoom.getChatRoomId(), prompt);
+            String aiContent = aiService.generateResponse(prompt);
+            log.info("Received response from Gemini AI for chat room {}:\n{}", chatRoom.getChatRoomId(), aiContent);
 
             // This runs when the AI response is received
             ChatMessageEntity aiMessage = new ChatMessageEntity();

@@ -27,7 +27,7 @@ public interface ChatRoomService {
 
     Optional<ChatRoom> getChatRoomById(String chatRoomId);
 
-    ChatMessage sendMessage(String chatRoomId, String senderId, String content, MessageType messageType);
+    ChatMessage sendMessage(String chatRoomId, String senderId, String content, MessageType messageType, String documentId);
 
     List<ChatMessage> getMessagesForChatRoom(String chatRoomId);
 

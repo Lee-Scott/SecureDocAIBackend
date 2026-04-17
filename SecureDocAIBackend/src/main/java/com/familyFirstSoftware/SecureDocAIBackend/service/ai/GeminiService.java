@@ -37,7 +37,7 @@ public class GeminiService implements AiService {
         this.fallbackModelName = GEMINI_2_5_FLASH_LITE;
 
         this.systemInstruction = Content.newBuilder()
-                .addParts(Part.newBuilder().setText(GEMINI_DOCTOR_PROMPT).build())
+                .addParts(Part.newBuilder().setText(BIOMARKER_NUTRITION_OPTIMIZER_PROMPT).build())
                 .build();
 
         this.safetySettings = Collections.singletonList(
@@ -71,12 +71,15 @@ public class GeminiService implements AiService {
 
     private String callModel(String modelName, String userContent) throws IOException {
         log.info("Calling Gemini model '{}' with input length={} chars", modelName, userContent != null ? userContent.length() : 0);
+        log.debug("Gemini Request Content:\n{}", userContent);
         GenerativeModel model = new GenerativeModel(modelName, this.vertexAI)
                 .withSystemInstruction(this.systemInstruction)
                 .withSafetySettings(this.safetySettings)
                 .withGenerationConfig(this.generationConfig);
 
         GenerateContentResponse response = model.generateContent(userContent);
-        return ResponseHandler.getText(response);
+        String responseText = ResponseHandler.getText(response);
+        log.debug("Gemini Response Content:\n{}", responseText);
+        return responseText;
     }
 }

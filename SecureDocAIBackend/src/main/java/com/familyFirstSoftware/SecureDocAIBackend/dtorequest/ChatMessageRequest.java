@@ -7,6 +7,7 @@ public class ChatMessageRequest {
     @NotEmpty(message = "Message content cannot be empty")
     private String content;
     private String documentId;
+    private String aiUserId;
 
     public String getContent() {
         return content;
@@ -22,5 +23,13 @@ public class ChatMessageRequest {
 
     public void setDocumentId(String documentId) {
         this.documentId = documentId;
+    }
+
+    public String getAiUserId() {
+        return aiUserId;
+    }
+
+    public void setAiUserId(String aiUserId) {
+        this.aiUserId = aiUserId;
     }
 }

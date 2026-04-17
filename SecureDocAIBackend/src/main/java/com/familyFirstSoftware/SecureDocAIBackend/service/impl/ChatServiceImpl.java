@@ -16,6 +16,7 @@ import com.familyFirstSoftware.SecureDocAIBackend.service.ChatService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.UserService;
 import com.familyFirstSoftware.SecureDocAIBackend.service.ai.GeminiService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +24,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.familyFirstSoftware.SecureDocAIBackend.constant.Constants.AI_DOCTOR_EMAIL;
 import static com.familyFirstSoftware.SecureDocAIBackend.dto.ChatMessageResponse.SenderType.AI_AGENT;
 import static com.familyFirstSoftware.SecureDocAIBackend.dto.ChatMessageResponse.SenderType.USER;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatServiceImpl implements ChatService {
 
     private final GeminiService geminiService;
@@ -41,10 +41,10 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
-    public ChatMessageResponse sendMessage(ChatMessageRequest request) {
+    public ChatMessageResponse chat(ChatMessageRequest request) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserEntity userEntity = userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("User not found"));
-        UserEntity aiUserEntity = userRepository.findUserByEmailIgnoreCase(AI_DOCTOR_EMAIL).orElseThrow(() -> new RuntimeException("AI User not found"));
+        UserEntity aiUserEntity = userRepository.findByUserId(request.getAiUserId()).orElseThrow(() -> new RuntimeException("AI User not found"));
 
         ChatRoomEntity chatRoom = chatRoomRepository.findChatRoomBetweenUsers(userEntity.getUserId(), aiUserEntity.getUserId()).orElseGet(() -> {
             ChatRoomEntity newChatRoom = ChatRoomEntity.builder().build();
@@ -61,7 +61,7 @@ public class ChatServiceImpl implements ChatService {
             int startIndex = Math.max(0, history.size() - 10);
             for (int i = startIndex; i < history.size(); i++) {
                 ChatMessageEntity msg = history.get(i);
-                String role = AI_DOCTOR_EMAIL.equals(msg.getSender().getEmail()) ? "AI Doctor" : "User";
+                String role = aiUserEntity.getUserId().equals(msg.getSender().getUserId()) ? "AI Doctor" : "User";
                 promptBuilder.append(role).append(": ").append(msg.getContent()).append("\n");
             }
             promptBuilder.append("\n");
@@ -89,7 +89,9 @@ public class ChatServiceImpl implements ChatService {
         userMessage.setMessageType(MessageType.TEXT);
         chatMessageRepository.save(userMessage);
 
+        log.info("Sending prompt to Gemini AI for chat room {}:\n{}", chatRoom.getChatRoomId(), prompt);
         String aiResponse = geminiService.generateResponse(prompt);
+        log.info("Received response from Gemini AI for chat room {}:\n{}", chatRoom.getChatRoomId(), aiResponse);
 
         ChatMessageEntity aiMessage = new ChatMessageEntity();
         aiMessage.setChatRoom(chatRoom);
@@ -104,10 +106,10 @@ public class ChatServiceImpl implements ChatService {
 
 
     @Override
-    public List<ChatMessageResponse> getChatHistory() {
+    public List<ChatMessageResponse> getChatHistory(String aiUserId) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserEntity userEntity = userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("User not found"));
-        UserEntity aiUserEntity = userRepository.findUserByEmailIgnoreCase(AI_DOCTOR_EMAIL).orElseThrow(() -> new RuntimeException("AI User not found"));
+        UserEntity aiUserEntity = userRepository.findByUserId(aiUserId).orElseThrow(() -> new RuntimeException("AI User not found"));
         
         ChatRoomEntity chatRoom = chatRoomRepository.findChatRoomBetweenUsers(userEntity.getUserId(), aiUserEntity.getUserId()).orElseThrow(() -> new RuntimeException("Chat room not found"));
         
@@ -120,4 +122,6 @@ public class ChatServiceImpl implements ChatService {
                 ))
                 .collect(Collectors.toList());
     }
+
+
 }

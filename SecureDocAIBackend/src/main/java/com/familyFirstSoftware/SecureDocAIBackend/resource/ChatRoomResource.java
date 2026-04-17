@@ -38,7 +38,8 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequestMapping("/api/chatrooms")
 @RequiredArgsConstructor
-public class ChatRoomResource {
+public class
+ChatRoomResource {
 
     private final ChatRoomService chatRoomService;
     private final ChatService chatService;
@@ -83,7 +84,7 @@ public class ChatRoomResource {
     }
 
     @DeleteMapping("/{chatRoomId}")
-    @PreAuthorize("hasAnyAuthority('chat:write') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('chat:delete') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Response> deleteChatRoom(@PathVariable String chatRoomId, HttpServletRequest request) {
         chatRoomService.deleteChatRoom(chatRoomId);
         return ResponseEntity.ok().body(getResponse(request, null, "Chat room deleted successfully.", OK));
@@ -98,10 +99,11 @@ public class ChatRoomResource {
             HttpServletRequest httpRequest
     ) {
         String content = (String) request.get("content");
+        String documentId = (String) request.get("documentId");
         String messageTypeStr = (String) request.getOrDefault("messageType", "TEXT");
         MessageType messageType = MessageType.valueOf(messageTypeStr);
 
-        ChatMessage message = chatRoomService.sendMessage(chatRoomId, userPrincipal.getUserId(), content, messageType);
+        ChatMessage message = chatRoomService.sendMessage(chatRoomId, userPrincipal.getUserId(), content, messageType, documentId);
         return ResponseEntity.ok().body(getResponse(httpRequest, Map.of("message", message), "Message sent successfully.", OK));
     }
 
@@ -150,14 +152,15 @@ public class ChatRoomResource {
             @RequestBody @Valid ChatMessageRequest request,
             HttpServletRequest httpRequest
     ) {
-        ChatMessageResponse message = chatService.sendMessage(request);
+        ChatMessageResponse message = chatService.chat(request);
         return ResponseEntity.ok().body(getResponse(httpRequest, Map.of("message", message), "AI Message sent successfully.", OK));
     }
 
-    @GetMapping("/ai/messages")
+    @GetMapping("/ai/messages/{aiUserId}")
     @PreAuthorize("hasAnyAuthority('chat:read') or hasAnyRole('USER', 'DOCTOR', 'SUPER_ADMIN')")
-    public ResponseEntity<Response> getAiChatHistory(HttpServletRequest request) {
-        List<ChatMessageResponse> messages = chatService.getChatHistory();
+    public ResponseEntity<Response> getAiChatHistory(@PathVariable String aiUserId, HttpServletRequest request) {
+        List<ChatMessageResponse> messages = chatService.getChatHistory(aiUserId);
         return ResponseEntity.ok().body(getResponse(request, Map.of("messages", messages), "AI Chat history retrieved successfully.", OK));
     }
-}
+
+    }

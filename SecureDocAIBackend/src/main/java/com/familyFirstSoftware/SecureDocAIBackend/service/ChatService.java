@@ -13,12 +13,12 @@ public interface ChatService {
      * @param request The request containing the message content.
      * @return The response from the AI agent.
      */
-    ChatMessageResponse sendMessage(ChatMessageRequest request);
-
     /**
      * Retrieves the chat history for the current user.
      *
      * @return A list of chat messages.
      */
-    List<ChatMessageResponse> getChatHistory();
+    List<ChatMessageResponse> getChatHistory(String aiUserId);
+
+    ChatMessageResponse chat(ChatMessageRequest request);
 }

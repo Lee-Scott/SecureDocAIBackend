@@ -79,7 +79,7 @@ public class DocumentProcessingResource {
             @RequestParam("chatRoomId") String chatRoomId,
             @org.springframework.security.core.annotation.AuthenticationPrincipal com.familyFirstSoftware.SecureDocAIBackend.dto.User userPrincipal) {
         String result = documentProcessingService.processDocument(file);
-        chatRoomService.sendMessage(chatRoomId, userPrincipal.getUserId(), result, com.familyFirstSoftware.SecureDocAIBackend.enumeration.chat.MessageType.TEXT);
+        chatRoomService.sendMessage(chatRoomId, userPrincipal.getUserId(), result, com.familyFirstSoftware.SecureDocAIBackend.enumeration.chat.MessageType.TEXT, null);
         return ResponseEntity.ok().build();
     }
 }
